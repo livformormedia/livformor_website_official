@@ -30,8 +30,8 @@ export default function Navigation({ isScrolled, onOpenResourceForm }) {
               <span className="text-white font-bold text-lg sm:text-xl">LM</span>
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-lg sm:text-xl font-bold text-gray-900">LivForMor</h1>
-              <p className="text-xs sm:text-sm text-teal-600 font-medium">MEDIA</p>
+              <h1 className={"text-lg sm:text-xl font-bold transition-colors " + (isScrolled ? "text-gray-900" : "text-white")}>LivForMor</h1>
+              <p className="text-xs sm:text-sm text-teal-400 font-medium">MEDIA</p>
             </div>
           </motion.div>
 
@@ -41,10 +41,10 @@ export default function Navigation({ isScrolled, onOpenResourceForm }) {
               <a
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 hover:text-teal-600 font-medium transition-colors duration-200 relative group text-sm"
+                className={"font-medium transition-colors duration-200 relative group text-sm " + (isScrolled ? "text-gray-700 hover:text-teal-600" : "text-white/80 hover:text-white")}
               >
                 {item.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-teal-600 transition-all duration-300 group-hover:w-full"></span>
+                <span className={"absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full " + (isScrolled ? "bg-teal-600" : "bg-teal-400")}></span>
               </a>
             ))}
           </div>
