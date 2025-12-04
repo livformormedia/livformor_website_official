@@ -185,7 +185,7 @@ export default function CareFramework() {
           className="text-center mt-16"
         >
           <Button className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white px-12 py-4 rounded-full font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 group">
-            Book a Strategy Call
+            Get Free Growth Resources
             <ArrowRight className="ml-3 w-5 h-5 transition-transform group-hover:translate-x-1" />
           </Button>
         </motion.div>

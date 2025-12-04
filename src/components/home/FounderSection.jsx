@@ -90,7 +90,7 @@ export default function FounderSection() {
           className="text-center mt-12"
         >
           <Button className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 group">
-            Book a Strategy Call
+            Get Free Practical Resources
             <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
           </Button>
         </motion.div>

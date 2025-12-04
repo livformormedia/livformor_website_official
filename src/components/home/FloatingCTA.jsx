@@ -15,30 +15,24 @@ export default function FloatingCTA({ onOpenResourceForm }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  if (!isVisible) return null;
+
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 0, y: 100 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 100 }}
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 50
-          }}
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-6 pointer-events-none">
+      <motion.div
+        initial={{ opacity: 0, y: 100 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 100 }}
+        className="pointer-events-auto"
+      >
+        <Button 
+          onClick={onOpenResourceForm}
+          className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white px-6 py-4 rounded-full font-semibold shadow-2xl transition-all duration-300"
         >
-          <Button 
-            onClick={onOpenResourceForm}
-            className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white px-6 py-4 rounded-full font-semibold shadow-2xl transition-all duration-300"
-          >
-            <Gift className="mr-2 w-5 h-5" />
-            Get Free Resources
-          </Button>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          <Gift className="mr-2 w-5 h-5" />
+          Get Free Resources
+        </Button>
+      </motion.div>
+    </div>
   );
 }

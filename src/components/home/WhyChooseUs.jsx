@@ -28,9 +28,9 @@ export default function WhyChooseUs() {
     'HIPAA-compliant campaign management',
     'Real-time performance dashboards',
     '24/7 campaign monitoring & optimization',
-    'Dedicated account manager',
-    'Monthly strategy sessions',
-    'Custom landing page creation'
+    'Weekly strategy sessions',
+    'Custom landing page creation',
+    'Custom, unique ads tailored to your clinic'
   ];
 
   return (
@@ -48,8 +48,8 @@ export default function WhyChooseUs() {
             Why Choose LivForMor Media
           </div>
           <h2 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-            Mental Health Marketing
-            <span className="bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent"> Specialists</span>
+            Ketamine, TMS, Spravato & Psychedelic Therapy
+            <span className="bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent"> Marketing Specialists</span>
           </h2>
         </motion.div>
 
@@ -108,7 +108,7 @@ export default function WhyChooseUs() {
               <div className="bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl p-8 shadow-2xl">
                 <div className="bg-white rounded-xl p-6 text-center">
                   <h4 className="text-2xl font-bold text-gray-900 mb-4">Ready to Grow Your Clinic?</h4>
-                  <p className="text-gray-600 mb-6">Let us build a custom patient acquisition system for your mental health practice.</p>
+                  <p className="text-gray-600 mb-6">Let us build a custom patient acquisition system for your Ketamine, TMS, Spravato, or Psychedelic Therapy clinic.</p>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />

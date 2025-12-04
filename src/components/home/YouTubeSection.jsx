@@ -8,19 +8,15 @@ export default function YouTubeSection() {
     {
       title: 'How We Reverse Engineered a $100K/Month Clinic Funnel',
       description: 'See exactly how we broke down and rebuilt a winning marketing funnel.',
-      thumbnail: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&h=225&fit=crop',
+      thumbnail: 'https://img.youtube.com/vi/BUZTxaAu79I/maxresdefault.jpg',
+      videoUrl: 'https://youtu.be/BUZTxaAu79I?si=y3TTtVP-FumzKt1q',
       featured: true
     },
     {
-      title: 'The C.A.R.E. Framework Explained',
-      description: 'Learn the 4-step system behind our client success.',
-      thumbnail: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=400&h=225&fit=crop',
-      featured: false
-    },
-    {
-      title: 'Mental Health Clinic Marketing 101',
-      description: 'Essential strategies for TMS, Ketamine, and Spravato clinics.',
-      thumbnail: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=225&fit=crop',
+      title: 'How Do 3 Extra Clinics Lead to Quality in Less Than 10 Minutes?',
+      description: 'Learn the strategies that help clinics attract quality patients fast.',
+      thumbnail: 'https://img.youtube.com/vi/J4S0nqjbo30/maxresdefault.jpg',
+      videoUrl: 'https://www.youtube.com/watch?v=J4S0nqjbo30',
       featured: false
     }
   ];
@@ -48,7 +44,7 @@ export default function YouTubeSection() {
         </motion.div>
 
         {/* Videos Grid */}
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-10">
+        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto mb-10">
           {videos.map((video, index) => (
             <motion.div
               key={index}
@@ -56,6 +52,7 @@ export default function YouTubeSection() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
               className="bg-gray-800 rounded-2xl overflow-hidden border border-gray-700 group cursor-pointer hover:border-gray-600 transition-colors"
+              onClick={() => window.open(video.videoUrl, '_blank')}
             >
               <div className="relative aspect-video">
                 <img 
@@ -89,9 +86,12 @@ export default function YouTubeSection() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-center"
         >
-          <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 group">
+          <Button 
+            onClick={() => window.open('https://www.youtube.com/@LivForMorMedia', '_blank')}
+            className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 group"
+          >
             <Youtube className="mr-2 w-5 h-5" />
-            Subscribe to Our Channel
+            Learn If Spravato, TMS, or Ketamine Marketing Can Work for You
             <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
           </Button>
         </motion.div>
