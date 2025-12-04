@@ -10,6 +10,7 @@ import FounderSection from '../components/home/FounderSection';
 import FAQ from '../components/home/FAQ';
 import Footer from '../components/home/Footer';
 import ResourceFormModal from '../components/home/ResourceFormModal';
+import FloatingCTA from '../components/home/FloatingCTA';
 
 export default function Home() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -26,14 +27,15 @@ export default function Home() {
 
   const handleFormSubmit = (data) => {
     console.log('Form submitted:', data);
-    // Here you would typically send this to your backend/CRM
   };
 
+  const openResourceForm = () => setIsResourceFormOpen(true);
+
   return (
-    <div className="min-h-screen bg-white font-['Nunito_Sans'] overflow-x-hidden w-full max-w-full">
-      <Navigation isScrolled={isScrolled} onOpenResourceForm={() => setIsResourceFormOpen(true)} />
-      <HeroSection onOpenResourceForm={() => setIsResourceFormOpen(true)} />
-      <FreeResourcesCTA onOpenResourceForm={() => setIsResourceFormOpen(true)} />
+    <div className="min-h-screen bg-white font-['Nunito_Sans'] overflow-x-hidden">
+      <Navigation isScrolled={isScrolled} onOpenResourceForm={openResourceForm} />
+      <HeroSection onOpenResourceForm={openResourceForm} />
+      <FreeResourcesCTA onOpenResourceForm={openResourceForm} />
       <YouTubeSection />
       <CareFramework />
       <WhyChooseUs />
@@ -46,6 +48,8 @@ export default function Home() {
         onClose={() => setIsResourceFormOpen(false)}
         onSubmit={handleFormSubmit}
       />
+      
+      <FloatingCTA onOpenResourceForm={openResourceForm} />
     </div>
   );
 }
