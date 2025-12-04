@@ -8,47 +8,80 @@ export default function HeroSection({ onOpenResourceForm }) {
     <section id="home" className="relative min-h-screen flex items-center bg-gray-950 pt-20 overflow-hidden">
       {/* Animated Glowing Background */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Primary glow orb - teal */}
+        {/* Primary glow orb - teal - morphing and color shifting */}
         <motion.div
           animate={{
-            x: [0, 100, -50, 0],
-            y: [0, -100, 50, 0],
-            scale: [1, 1.2, 0.9, 1],
+            x: [0, 150, -100, 50, 0],
+            y: [0, -120, 80, -50, 0],
+            scale: [1, 1.4, 0.8, 1.2, 1],
+            opacity: [0.3, 0.5, 0.25, 0.45, 0.3],
           }}
           transition={{
-            duration: 15,
+            duration: 12,
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-teal-500/30 rounded-full blur-[120px]"
+          className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-teal-400 rounded-full blur-[100px]"
         />
-        {/* Secondary glow orb - blue */}
+        {/* Secondary glow orb - blue - faster movement */}
         <motion.div
           animate={{
-            x: [0, -80, 60, 0],
-            y: [0, 80, -60, 0],
-            scale: [1, 0.9, 1.1, 1],
+            x: [0, -120, 100, -60, 0],
+            y: [0, 100, -80, 120, 0],
+            scale: [1, 0.7, 1.3, 0.9, 1],
+            opacity: [0.35, 0.5, 0.2, 0.4, 0.35],
           }}
           transition={{
-            duration: 18,
+            duration: 10,
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-blue-600/30 rounded-full blur-[120px]"
+          className="absolute bottom-1/4 right-1/4 w-[450px] h-[450px] bg-blue-500 rounded-full blur-[100px]"
         />
-        {/* Accent glow - purple/indigo blend */}
+        {/* Third orb - purple - pulsing */}
         <motion.div
           animate={{
-            x: [0, 60, -40, 0],
-            y: [0, -60, 80, 0],
-            scale: [1, 1.1, 0.95, 1],
+            x: [0, 80, -60, 100, 0],
+            y: [0, -80, 100, -40, 0],
+            scale: [1, 1.5, 0.6, 1.3, 1],
+            opacity: [0.25, 0.4, 0.15, 0.35, 0.25],
           }}
           transition={{
-            duration: 20,
+            duration: 14,
             repeat: Infinity,
             ease: "easeInOut",
           }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-indigo-500/20 rounded-full blur-[150px]"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500 rounded-full blur-[120px]"
+        />
+        {/* Fourth orb - cyan accent - quick pulses */}
+        <motion.div
+          animate={{
+            x: [0, -100, 80, -40, 0],
+            y: [0, 60, -100, 80, 0],
+            scale: [0.8, 1.2, 0.6, 1.4, 0.8],
+            opacity: [0.2, 0.45, 0.1, 0.35, 0.2],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute top-1/3 right-1/3 w-[400px] h-[400px] bg-cyan-400 rounded-full blur-[90px]"
+        />
+        {/* Fifth orb - indigo deep */}
+        <motion.div
+          animate={{
+            x: [0, 60, -80, 40, 0],
+            y: [0, -40, 60, -80, 0],
+            scale: [1.1, 0.7, 1.4, 0.9, 1.1],
+            opacity: [0.2, 0.35, 0.15, 0.3, 0.2],
+          }}
+          transition={{
+            duration: 16,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          className="absolute bottom-1/3 left-1/3 w-[550px] h-[550px] bg-indigo-600 rounded-full blur-[110px]"
         />
         {/* Subtle grid overlay */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />

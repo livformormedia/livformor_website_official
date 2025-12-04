@@ -22,11 +22,17 @@ export default function FloatingCTA({ onOpenResourceForm }) {
           initial={{ opacity: 0, y: 100 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 100 }}
-          className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50"
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 50
+          }}
         >
           <Button 
             onClick={onOpenResourceForm}
-            className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white px-6 py-4 rounded-full font-semibold shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105"
+            className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white px-6 py-4 rounded-full font-semibold shadow-2xl transition-all duration-300"
           >
             <Gift className="mr-2 w-5 h-5" />
             Get Free Resources
