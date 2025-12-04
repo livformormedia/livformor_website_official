@@ -13,7 +13,7 @@ export default function YouTubeSection() {
       featured: true
     },
     {
-      title: 'How to 3X Your Clinic\'s Lead Quality in Less Than 10 Minutes',
+      title: 'How Do 3 Extra Clinics Lead to Quality in Less Than 10 Minutes?',
       description: 'Learn the strategies that help clinics attract quality patients fast.',
       thumbnail: 'https://img.youtube.com/vi/J4S0nqjbo30/maxresdefault.jpg',
       videoUrl: 'https://www.youtube.com/watch?v=J4S0nqjbo30',
@@ -91,7 +91,7 @@ export default function YouTubeSection() {
             className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 group"
           >
             <Youtube className="mr-2 w-5 h-5" />
-            Get More Practical Insights
+            Learn If Spravato, TMS, or Ketamine Marketing Can Work for You
             <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
           </Button>
         </motion.div>
