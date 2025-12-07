@@ -38,8 +38,10 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
       onSubmit(formData);
     }
     
-    setStep(3);
     setIsSubmitting(false);
+    
+    // Redirect to resources page
+    window.location.href = 'https://clinic-growth-accelerator-85338975.base44.app/';
   };
 
   const resetAndClose = () => {
@@ -104,7 +106,7 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
           {/* Step 1: Contact Info */}
           {step === 1 && (
             <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Tell us about yourself</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Where should we send your resources?</h3>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
