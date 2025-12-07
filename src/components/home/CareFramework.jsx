@@ -94,14 +94,9 @@ export default function CareFramework() {
           <h2 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
             The <span className="bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">C.A.R.E.</span> Framework
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-10">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Meet the framework behind our clients' growth. A systematic approach to building sustainable patient pipelines.
           </p>
-          <img 
-            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/10e195d3d_Gemini_Generated_Image_sq0acnsq0acnsq0a1.png" 
-            alt="C.A.R.E. Framework - Clarity, Authority, Reach, Education"
-            className="max-w-xs sm:max-w-sm md:max-w-md mx-auto"
-          />
         </motion.div>
 
         {/* Accordion Framework */}
