@@ -24,15 +24,13 @@ export default function Navigation({ isScrolled, onOpenResourceForm }) {
           {/* Logo */}
           <motion.div
             whileHover={{ scale: 1.05 }}
-            className="flex items-center space-x-3"
+            className="flex items-center"
           >
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-lg sm:text-xl">LM</span>
-            </div>
-            <div className="hidden sm:block">
-              <h1 className={"text-lg sm:text-xl font-bold transition-colors " + (isScrolled ? "text-gray-900" : "text-white")}>LivForMor</h1>
-              <p className="text-xs sm:text-sm text-teal-400 font-medium">MEDIA</p>
-            </div>
+            <img 
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/b6fc53ddd_LivForMorMediaLogo.png"
+              alt="LivForMor Media"
+              className="h-12 sm:h-16 w-auto"
+            />
           </motion.div>
 
           {/* Desktop Navigation */}
