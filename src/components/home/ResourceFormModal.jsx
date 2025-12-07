@@ -38,8 +38,10 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
       onSubmit(formData);
     }
     
-    setStep(3);
     setIsSubmitting(false);
+    
+    // Redirect to resources page
+    window.location.href = 'https://clinic-growth-accelerator-85338975.base44.app/';
   };
 
   const resetAndClose = () => {
@@ -83,7 +85,7 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Get Free Resources</h2>
-                <p className="text-sm text-gray-500">Step {step} of 3</p>
+                <p className="text-sm text-gray-500">Step {step} of 2</p>
               </div>
             </div>
             <button onClick={resetAndClose} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -96,70 +98,14 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
                 className="bg-gradient-to-r from-teal-500 to-blue-600 h-2 rounded-full transition-all duration-500"
-                style={{ width: step === 1 ? '33%' : step === 2 ? '66%' : '100%' }}
+                style={{ width: step === 1 ? '50%' : '100%' }}
               ></div>
             </div>
           </div>
 
-          {/* Step 1: Contact Info */}
+          {/* Step 1: Clinic Info */}
           {step === 1 && (
             <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Tell us about yourself</h3>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
-                    <Input 
-                      value={formData.firstName}
-                      onChange={e => handleChange('firstName', e.target.value)}
-                      placeholder="John"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
-                    <Input 
-                      value={formData.lastName}
-                      onChange={e => handleChange('lastName', e.target.value)}
-                      placeholder="Smith"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                  <Input 
-                    type="email"
-                    value={formData.email}
-                    onChange={e => handleChange('email', e.target.value)}
-                    placeholder="john@clinic.com"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                  <Input 
-                    type="tel"
-                    value={formData.phone}
-                    onChange={e => handleChange('phone', e.target.value)}
-                    placeholder="(555) 123-4567"
-                  />
-                </div>
-              </div>
-              <Button 
-                onClick={handleNext}
-                disabled={!formData.firstName || !formData.lastName || !formData.email}
-                className="w-full mt-6 bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white py-3 rounded-full font-semibold"
-              >
-                Continue
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </div>
-          )}
-
-          {/* Step 2: Clinic Info */}
-          {step === 2 && (
-            <form onSubmit={handleSubmit} className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Tell us about your clinic</h3>
               <div className="space-y-4">
                 <div>
@@ -217,8 +163,64 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
                 </div>
               </div>
               <Button 
+                onClick={handleNext}
+                disabled={!formData.clinicName || !formData.clinicType}
+                className="w-full mt-6 bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white py-3 rounded-full font-semibold"
+              >
+                Continue
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </div>
+          )}
+
+          {/* Step 2: Contact Info */}
+          {step === 2 && (
+            <form onSubmit={handleSubmit} className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Tell us about yourself</h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                    <Input 
+                      value={formData.firstName}
+                      onChange={e => handleChange('firstName', e.target.value)}
+                      placeholder="John"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                    <Input 
+                      value={formData.lastName}
+                      onChange={e => handleChange('lastName', e.target.value)}
+                      placeholder="Smith"
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                  <Input 
+                    type="email"
+                    value={formData.email}
+                    onChange={e => handleChange('email', e.target.value)}
+                    placeholder="john@clinic.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <Input 
+                    type="tel"
+                    value={formData.phone}
+                    onChange={e => handleChange('phone', e.target.value)}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+              </div>
+              <Button 
                 type="submit"
-                disabled={!formData.clinicName || !formData.clinicType || isSubmitting}
+                disabled={!formData.firstName || !formData.lastName || !formData.email || isSubmitting}
                 className="w-full mt-6 bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white py-3 rounded-full font-semibold"
               >
                 {isSubmitting ? (
@@ -234,37 +236,6 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
                 )}
               </Button>
             </form>
-          )}
-
-          {/* Step 3: Success */}
-          {step === 3 && (
-            <div className="p-8 text-center">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCircle className="w-10 h-10 text-green-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">You're All Set!</h3>
-              <p className="text-gray-600 mb-6">
-                Check your email for your free resources. We've sent you our best strategies for growing your {formData.clinicType === 'tms' ? 'TMS' : formData.clinicType === 'ketamine' ? 'Ketamine' : formData.clinicType === 'spravato' ? 'Spravato' : 'mental health'} clinic.
-              </p>
-              <div className="bg-teal-50 rounded-xl p-4 mb-6">
-                <p className="text-teal-800 font-medium">
-                  Want to accelerate your growth even faster?
-                </p>
-              </div>
-              <Button 
-                className="w-full bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white py-3 rounded-full font-semibold"
-                onClick={resetAndClose}
-              >
-                Book a Free Strategy Call
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              <button 
-                onClick={resetAndClose}
-                className="mt-4 text-gray-500 hover:text-gray-700 text-sm"
-              >
-                Close this window
-              </button>
-            </div>
           )}
         </motion.div>
       </motion.div>
