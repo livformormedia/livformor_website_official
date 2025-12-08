@@ -10,10 +10,10 @@ export default function Navigation({ isScrolled, onOpenResourceForm }) {
 
   const navItems = [
     { name: 'Home', href: 'Home', isPage: true },
-    { name: 'About', href: '#about' },
-    { name: 'The C.A.R.E. Framework', href: '#care' },
+    { name: 'About', href: 'Home#about', isPageWithHash: true },
+    { name: 'The C.A.R.E. Framework', href: 'Home#care', isPageWithHash: true },
     { name: 'Blog', href: 'Blog', isPage: true },
-    { name: 'YouTube', href: '#youtube' },
+    { name: 'YouTube', href: 'Home#youtube', isPageWithHash: true },
   ];
 
   return (
@@ -39,7 +39,7 @@ export default function Navigation({ isScrolled, onOpenResourceForm }) {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-6">
             {navItems.map((item) => (
-              item.isPage ? (
+              item.isPage || item.isPageWithHash ? (
                 <Link
                   key={item.name}
                   to={createPageUrl(item.href)}
@@ -92,7 +92,7 @@ export default function Navigation({ isScrolled, onOpenResourceForm }) {
             >
               <div className="py-4 space-y-2">
                 {navItems.map((item) => (
-                  item.isPage ? (
+                  item.isPage || item.isPageWithHash ? (
                     <Link
                       key={item.name}
                       to={createPageUrl(item.href)}
