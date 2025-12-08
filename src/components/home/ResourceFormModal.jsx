@@ -31,11 +31,21 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate submission
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    if (onSubmit) {
-      onSubmit(formData);
+    try {
+      // Send to webhook
+      await fetch('https://services.leadconnectorhq.com/hooks/MSFgME5t3cZZRgzhEnI2/webhook-trigger/44b1231f-f69c-4962-9437-a661d0ec24fc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      if (onSubmit) {
+        onSubmit(formData);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
     }
     
     setIsSubmitting(false);
