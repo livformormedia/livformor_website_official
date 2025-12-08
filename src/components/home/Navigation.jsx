@@ -9,7 +9,7 @@ export default function Navigation({ isScrolled, onOpenResourceForm }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { name: 'Home', href: '#home' },
+    { name: 'Home', href: 'Home', isPage: true },
     { name: 'About', href: '#about' },
     { name: 'The C.A.R.E. Framework', href: '#care' },
     { name: 'Blog', href: 'Blog', isPage: true },
