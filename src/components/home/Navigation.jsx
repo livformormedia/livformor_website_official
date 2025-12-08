@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X, Gift } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '../../pages/utils';
 
 export default function Navigation({ isScrolled, onOpenResourceForm }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -10,6 +12,7 @@ export default function Navigation({ isScrolled, onOpenResourceForm }) {
     { name: 'Home', href: '#home' },
     { name: 'About', href: '#about' },
     { name: 'The C.A.R.E. Framework', href: '#care' },
+    { name: 'Blog', href: 'Blog', isPage: true },
     { name: 'YouTube', href: '#youtube' },
   ];
 
@@ -36,14 +39,25 @@ export default function Navigation({ isScrolled, onOpenResourceForm }) {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-6">
             {navItems.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className={"font-medium transition-colors duration-200 relative group text-sm " + (isScrolled ? "text-gray-700 hover:text-teal-600" : "text-white/80 hover:text-white")}
-              >
-                {item.name}
-                <span className={"absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full " + (isScrolled ? "bg-teal-600" : "bg-teal-400")}></span>
-              </a>
+              item.isPage ? (
+                <Link
+                  key={item.name}
+                  to={createPageUrl(item.href)}
+                  className={"font-medium transition-colors duration-200 relative group text-sm " + (isScrolled ? "text-gray-700 hover:text-teal-600" : "text-white/80 hover:text-white")}
+                >
+                  {item.name}
+                  <span className={"absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full " + (isScrolled ? "bg-teal-600" : "bg-teal-400")}></span>
+                </Link>
+              ) : (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className={"font-medium transition-colors duration-200 relative group text-sm " + (isScrolled ? "text-gray-700 hover:text-teal-600" : "text-white/80 hover:text-white")}
+                >
+                  {item.name}
+                  <span className={"absolute -bottom-1 left-0 w-0 h-0.5 transition-all duration-300 group-hover:w-full " + (isScrolled ? "bg-teal-600" : "bg-teal-400")}></span>
+                </a>
+              )
             ))}
           </div>
 
@@ -78,14 +92,25 @@ export default function Navigation({ isScrolled, onOpenResourceForm }) {
             >
               <div className="py-4 space-y-2">
                 {navItems.map((item) => (
-                  <a
-                    key={item.name}
-                    href={item.href}
-                    className="block px-4 py-2 text-gray-700 hover:text-teal-600 hover:bg-gray-50 rounded-lg font-medium transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {item.name}
-                  </a>
+                  item.isPage ? (
+                    <Link
+                      key={item.name}
+                      to={createPageUrl(item.href)}
+                      className="block px-4 py-2 text-gray-700 hover:text-teal-600 hover:bg-gray-50 rounded-lg font-medium transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  ) : (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      className="block px-4 py-2 text-gray-700 hover:text-teal-600 hover:bg-gray-50 rounded-lg font-medium transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {item.name}
+                    </a>
+                  )
                 ))}
               </div>
             </motion.div>

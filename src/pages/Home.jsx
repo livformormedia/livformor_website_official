@@ -13,6 +13,27 @@ import ResourceFormModal from '../components/home/ResourceFormModal';
 import FloatingCTA from '../components/home/FloatingCTA';
 
 export default function Home() {
+  // SEO
+  useEffect(() => {
+    document.title = 'LivForMor Media - Mental Health Clinic Marketing Experts | TMS, Ketamine, Spravato';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute('content', 'Specialized marketing agency for mental health clinics. We help TMS, Ketamine, Spravato, and Psychedelic therapy clinics attract high-quality patients through proven strategies.');
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'description';
+      meta.content = 'Specialized marketing agency for mental health clinics. We help TMS, Ketamine, Spravato, and Psychedelic therapy clinics attract high-quality patients through proven strategies.';
+      document.head.appendChild(meta);
+    }
+
+    const metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (!metaKeywords) {
+      const meta = document.createElement('meta');
+      meta.name = 'keywords';
+      meta.content = 'TMS clinic marketing, Ketamine clinic marketing, Spravato marketing, psychedelic therapy marketing, mental health clinic advertising, patient acquisition';
+      document.head.appendChild(meta);
+    }
+  }, []);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isResourceFormOpen, setIsResourceFormOpen] = useState(false);
 
