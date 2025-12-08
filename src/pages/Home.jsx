@@ -46,6 +46,19 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Handle hash navigation
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      setTimeout(() => {
+        const element = document.querySelector(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  }, []);
+
   const handleFormSubmit = (data) => {
     console.log('Form submitted:', data);
   };
@@ -57,10 +70,16 @@ export default function Home() {
       <Navigation isScrolled={isScrolled} onOpenResourceForm={openResourceForm} />
       <HeroSection onOpenResourceForm={openResourceForm} />
       <FreeResourcesCTA onOpenResourceForm={openResourceForm} />
-      <YouTubeSection />
-      <CareFramework />
+      <div id="youtube">
+        <YouTubeSection />
+      </div>
+      <div id="care">
+        <CareFramework />
+      </div>
       <WhyChooseUs />
-      <FounderSection />
+      <div id="about">
+        <FounderSection />
+      </div>
       <FAQ />
       <Footer />
       
