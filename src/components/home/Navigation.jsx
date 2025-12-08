@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Gift } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { createPageUrl } from '../../pages/utils';
+import { createPageUrl } from '../../utils';
 
 export default function Navigation({ isScrolled, onOpenResourceForm }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
