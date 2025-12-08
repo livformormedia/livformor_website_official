@@ -8,15 +8,15 @@ export default function FounderSection() {
     {
       name: 'Oriel Mor',
       role: 'Co-Founder & CEO',
-      initials: 'OM',
-      bio: 'After managing over $500,000 in paid campaigns and spending 6 years in sales and advertising, Oriel shifted his focus to helping mental health clinics grow ethically and sustainably.',
+      image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/c45d6010d_WhatsAppImage2025-12-08at124721.jpg',
+      bio: 'After managing over $1M in paid campaigns and spending 6 years in sales and advertising, Oriel shifted his focus to helping mental health clinics grow ethically and sustainably.',
       specialty: 'Marketing & Strategy'
     },
     {
       name: 'Matt Rodriguez',
       role: 'Co-Founder & COO',
-      initials: 'MR',
-      bio: 'With extensive experience in operations and business development, Matt ensures our clients receive seamless execution and measurable results from every campaign.',
+      image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/cd0092663_1758778991047.jpg',
+      bio: 'As a TMS clinic manager in Utah and former Head of Marketing at Greenbrook TMS for 2 years, Matt brings deep industry expertise and insider knowledge to help clinics scale effectively.',
       specialty: 'Operations & Growth'
     }
   ];
@@ -51,8 +51,8 @@ export default function FounderSection() {
               transition={{ duration: 0.6, delay: index * 0.2 }}
               className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 shadow-lg border border-gray-100 text-center"
             >
-              <div className="w-24 h-24 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full mx-auto mb-6 flex items-center justify-center">
-                <span className="text-3xl font-bold text-white">{founder.initials}</span>
+              <div className="w-24 h-24 rounded-full mx-auto mb-6 overflow-hidden">
+                <img src={founder.image} alt={founder.name} className="w-full h-full object-cover" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">{founder.name}</h3>
               <p className="text-teal-600 font-semibold mb-2">{founder.role}</p>
