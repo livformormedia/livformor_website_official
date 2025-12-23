@@ -10,8 +10,25 @@ export default function ExportHTML() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LivForMor Media - Mental Health Clinic Marketing Experts</title>
+    <title>LivForMor Media - Mental Health Clinic Marketing Experts | TMS, Ketamine, Spravato</title>
     <meta name="description" content="Specialized marketing agency for mental health clinics. We help TMS, Ketamine, Spravato, and Psychedelic therapy clinics attract high-quality patients through proven strategies.">
+    <meta name="keywords" content="TMS marketing, ketamine clinic marketing, spravato marketing, psychedelic therapy marketing, mental health clinic advertising, patient acquisition, clinic growth">
+    <meta name="author" content="LivForMor Media">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://livformor.com">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="LivForMor Media - Mental Health Clinic Marketing Experts">
+    <meta property="og:description" content="Specialized marketing for TMS, Ketamine, Spravato & Psychedelic Therapy clinics. Proven patient acquisition strategies.">
+    <meta property="og:image" content="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/b6fc53ddd_LivForMorMediaLogo.png">
+    <meta property="og:url" content="https://livformor.com">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="LivForMor Media - Mental Health Clinic Marketing">
+    <meta name="twitter:description" content="Specialized marketing for TMS, Ketamine, Spravato & Psychedelic Therapy clinics.">
+    <meta name="twitter:image" content="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/b6fc53ddd_LivForMorMediaLogo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -800,14 +817,7 @@ export default function ExportHTML() {
             }
         }
 
-        /* Founders Section */
-        .founders-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            max-width: 1024px;
-            margin: 0 auto 4rem;
-        }
+        /* Founder Section */
 
         .founder-card {
             background: linear-gradient(135deg, #f9fafb, white);
@@ -1854,39 +1864,30 @@ export default function ExportHTML() {
         <div class="section-container">
             <div class="section-header">
                 <div class="section-badge">
-                    🏆 Meet the Founders
+                    🏆 Meet the Founder
                 </div>
                 <h2 class="section-title">
                     Passionate About<br>
                     <span class="gradient-text">Healing Lives</span>
                 </h2>
             </div>
-            <div class="founders-grid">
+            <div style="max-width: 600px; margin: 0 auto 4rem;">
                 <div class="founder-card">
                     <div class="founder-avatar">
                         <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/c45d6010d_WhatsAppImage2025-12-08at124721.jpg" alt="Oriel Mor">
                     </div>
                     <h3 class="founder-name">Oriel Mor</h3>
-                    <p class="founder-role">Co-Founder & CEO</p>
+                    <p class="founder-role">Founder & CEO</p>
                     <p class="founder-specialty">Marketing & Strategy</p>
                     <p class="founder-bio">After managing over $1M in paid campaigns and spending 6 years in sales and advertising, Oriel shifted his focus to helping mental health clinics grow ethically and sustainably.</p>
                 </div>
-                <div class="founder-card">
-                    <div class="founder-avatar">
-                        <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/cd0092663_1758778991047.jpg" alt="Matt Rodriguez">
-                    </div>
-                    <h3 class="founder-name">Matt Rodriguez</h3>
-                    <p class="founder-role">Co-Founder & COO</p>
-                    <p class="founder-specialty">Operations & Growth</p>
-                    <p class="founder-bio">As a TMS clinic manager in Utah and former Head of Marketing at Greenbrook TMS for 2 years, Matt brings deep industry expertise and insider knowledge to help clinics scale effectively.</p>
-                </div>
             </div>
             <div class="mission-box">
-                <h3>Our Mission</h3>
-                <p>"Every mental health clinic deserves to reach the patients who need them most. Our job is to bridge that gap with ethical, effective marketing that honors both the clinic's values and the patient's journey to healing."</p>
+                <h3>My Mission</h3>
+                <p>"Every mental health clinic deserves to reach the patients who need them most. My job is to bridge that gap with ethical, effective marketing that honors both the clinic's values and the patient's journey to healing."</p>
                 <div class="mission-signature">
                     <div class="mission-line"></div>
-                    <span class="mission-authors">Oriel & Matt</span>
+                    <span class="mission-authors">Oriel Mor</span>
                     <div class="mission-line"></div>
                 </div>
             </div>
@@ -2338,7 +2339,7 @@ export default function ExportHTML() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-teal-600 font-bold">•</span>
-              <span>About section (Founders - You and Matt)</span>
+              <span>About section (Founder - Oriel Mor)</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-teal-600 font-bold">•</span>
