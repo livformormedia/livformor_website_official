@@ -11,6 +11,7 @@ import FAQ from '../components/home/FAQ';
 import Footer from '../components/home/Footer';
 import ResourceFormModal from '../components/home/ResourceFormModal';
 import FloatingCTA from '../components/home/FloatingCTA';
+import StructuredData from '../components/StructuredData';
 
 export default function Home() {
   // SEO
@@ -152,6 +153,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white font-['Nunito_Sans'] overflow-x-hidden">
+      <StructuredData type="organization" />
       <Navigation isScrolled={isScrolled} onOpenResourceForm={openResourceForm} />
       <HeroSection onOpenResourceForm={openResourceForm} />
       <FreeResourcesCTA onOpenResourceForm={openResourceForm} />

@@ -12,6 +12,7 @@ export default function Blog() {
   useEffect(() => {
     // SEO
     document.title = 'Blog - Mental Health Clinic Marketing Insights | LivForMor Media';
+    
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
       metaDesc.setAttribute('content', 'Expert insights on mental health clinic marketing, patient acquisition strategies, and growth tactics for TMS, Ketamine, Spravato, and Psychedelic therapy clinics.');
@@ -19,6 +20,54 @@ export default function Blog() {
       const meta = document.createElement('meta');
       meta.name = 'description';
       meta.content = 'Expert insights on mental health clinic marketing, patient acquisition strategies, and growth tactics for TMS, Ketamine, Spravato, and Psychedelic therapy clinics.';
+      document.head.appendChild(meta);
+    }
+
+    const metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (!metaKeywords) {
+      const meta = document.createElement('meta');
+      meta.name = 'keywords';
+      meta.content = 'mental health marketing blog, TMS clinic marketing tips, ketamine clinic growth, clinic patient acquisition, healthcare marketing insights';
+      document.head.appendChild(meta);
+    }
+
+    const metaRobots = document.querySelector('meta[name="robots"]');
+    if (!metaRobots) {
+      const meta = document.createElement('meta');
+      meta.name = 'robots';
+      meta.content = 'index, follow';
+      document.head.appendChild(meta);
+    }
+
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (!ogTitle) {
+      const meta = document.createElement('meta');
+      meta.setAttribute('property', 'og:title');
+      meta.content = 'Mental Health Clinic Marketing Blog | LivForMor Media';
+      document.head.appendChild(meta);
+    }
+
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (!ogDesc) {
+      const meta = document.createElement('meta');
+      meta.setAttribute('property', 'og:description');
+      meta.content = 'Expert insights on mental health clinic marketing, patient acquisition strategies, and growth tactics.';
+      document.head.appendChild(meta);
+    }
+
+    const ogType = document.querySelector('meta[property="og:type"]');
+    if (!ogType) {
+      const meta = document.createElement('meta');
+      meta.setAttribute('property', 'og:type');
+      meta.content = 'website';
+      document.head.appendChild(meta);
+    }
+
+    const twitterCard = document.querySelector('meta[name="twitter:card"]');
+    if (!twitterCard) {
+      const meta = document.createElement('meta');
+      meta.name = 'twitter:card';
+      meta.content = 'summary_large_image';
       document.head.appendChild(meta);
     }
   }, []);
