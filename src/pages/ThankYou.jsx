@@ -42,8 +42,8 @@ export default function ThankYou() {
     },
     {
       title: 'Patient Acquisition Strategies That Actually Work',
-      thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
-      embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+      thumbnail: 'https://img.youtube.com/vi/3lbRBntR8h4/maxresdefault.jpg',
+      embedUrl: 'https://www.youtube.com/embed/3lbRBntR8h4'
     }
   ];
 
@@ -99,7 +99,7 @@ export default function ThankYou() {
             className="text-center"
           >
             <Button 
-              onClick={() => window.open('https://www.youtube.com/@LivForMorMedia', '_blank')}
+              onClick={() => window.open('https://www.youtube.com/@orielmor-livformormedia', '_blank')}
               className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
               <Youtube className="mr-2 w-5 h-5" />
