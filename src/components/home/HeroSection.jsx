@@ -147,7 +147,7 @@ export default function HeroSection({ onOpenResourceForm }) {
             className="flex justify-center gap-8 md:gap-16 pt-12 mt-12 border-t border-white/10"
           >
             <div className="text-center">
-              <div className="text-2xl md:text-3xl font-bold text-white">$500K+</div>
+              <div className="text-2xl md:text-3xl font-bold text-white">$1M+</div>
               <div className="text-sm text-gray-400">Ad Spend Managed</div>
             </div>
             <div className="text-center">
