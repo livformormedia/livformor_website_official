@@ -50,8 +50,17 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
     
     setIsSubmitting(false);
     
-    // Redirect to resources page
-    window.location.href = 'https://clinic-growth-accelerator-85338975.base44.app/';
+    // Track Facebook event
+    if (typeof fbq !== 'undefined') {
+      fbq('track', 'CompleteRegistration', {
+        content_name: 'Resource Form Submission',
+        content_category: 'Lead',
+        status: 'completed'
+      });
+    }
+    
+    // Redirect to Thank You page
+    window.location.href = '/ThankYou';
   };
 
   const resetAndClose = () => {
