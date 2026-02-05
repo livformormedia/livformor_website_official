@@ -51,6 +51,7 @@ import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import ExportHTML from './pages/ExportHTML';
 import Home from './pages/Home';
+import ThankYou from './pages/ThankYou';
 import __Layout from './Layout.jsx';
 
 
@@ -59,6 +60,7 @@ export const PAGES = {
     "BlogPost": BlogPost,
     "ExportHTML": ExportHTML,
     "Home": Home,
+    "ThankYou": ThankYou,
 }
 
 export const pagesConfig = {
