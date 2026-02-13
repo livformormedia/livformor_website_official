@@ -660,7 +660,7 @@ function HeroSection() {
                     animation: 'heroCtaEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.8s forwards',
                     opacity: 0,
                 }}>
-                    <button onClick={() => scrollTo('contact')} style={{
+                    <button onClick={() => scrollTo('problem')} style={{
                         background: `linear-gradient(135deg, ${BRAND.gold}, ${BRAND.goldDark})`,
                         color: BRAND.dark, border: 'none', borderRadius: 50,
                         padding: '16px 36px', fontSize: 16, fontWeight: 800,
