@@ -992,26 +992,34 @@ function ROICalculator({ onAssessmentClick }) {
                     border-radius: 4px;
                     cursor: pointer;
                     outline: none;
+                    touch-action: none;
+                    -webkit-tap-highlight-color: transparent;
+                    padding: 16px 0;
+                    margin: -16px 0;
+                    box-sizing: content-box;
+                    background: transparent;
                 }
                 input[type="range"]::-webkit-slider-thumb {
                     -webkit-appearance: none;
                     appearance: none;
-                    width: 24px; height: 24px; border-radius: 50%;
+                    width: 36px; height: 36px; border-radius: 50%;
                     background: ${BRAND.teal}; cursor: grab;
                     border: 3px solid white;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-                    margin-top: -8px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+                    margin-top: -14px;
+                    position: relative;
+                    z-index: 2;
                 }
                 input[type="range"]::-webkit-slider-thumb:active {
                     cursor: grabbing;
                     transform: scale(1.15);
-                    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+                    box-shadow: 0 2px 12px rgba(0,0,0,0.35);
                 }
                 input[type="range"]::-moz-range-thumb {
-                    width: 24px; height: 24px; border-radius: 50%;
+                    width: 36px; height: 36px; border-radius: 50%;
                     background: ${BRAND.teal}; cursor: grab;
                     border: 3px solid white;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
                 }
                 input[type="range"]::-moz-range-thumb:active {
                     cursor: grabbing;
