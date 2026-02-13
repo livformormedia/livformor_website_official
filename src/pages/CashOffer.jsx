@@ -797,7 +797,7 @@ function ROICalculator({ onAssessmentClick }) {
         const thumbRef = React.useRef(null);
         const fillRef = React.useRef(null);
         const displayRef = React.useRef(null);
-        const dragging = React.useRef(false);
+        const lastValue = React.useRef(value);
 
         const pct = ((value - min) / (max - min)) * 100;
 
@@ -813,6 +813,7 @@ function ROICalculator({ onAssessmentClick }) {
         };
 
         const updateVisuals = (val) => {
+            lastValue.current = val;
             const p = ((val - min) / (max - min)) * 100;
             if (fillRef.current) fillRef.current.style.width = p + '%';
             if (thumbRef.current) thumbRef.current.style.left = p + '%';
@@ -821,44 +822,38 @@ function ROICalculator({ onAssessmentClick }) {
             }
         };
 
-        // Touch handlers
+        // Touch — attach move/end to document so they persist
         const onTouchStart = (e) => {
             e.preventDefault();
-            dragging.current = true;
-            const val = valueFromX(e.touches[0].clientX);
-            updateVisuals(val);
-            onChange(val);
+            e.stopPropagation();
+            updateVisuals(valueFromX(e.touches[0].clientX));
 
             const onMove = (ev) => {
                 ev.preventDefault();
-                const v = valueFromX(ev.touches[0].clientX);
-                updateVisuals(v);
-                onChange(v);
+                ev.stopPropagation();
+                updateVisuals(valueFromX(ev.touches[0].clientX));
             };
             const onEnd = () => {
-                dragging.current = false;
+                onChange(lastValue.current);
                 document.removeEventListener('touchmove', onMove);
                 document.removeEventListener('touchend', onEnd);
+                document.removeEventListener('touchcancel', onEnd);
             };
             document.addEventListener('touchmove', onMove, { passive: false });
             document.addEventListener('touchend', onEnd);
+            document.addEventListener('touchcancel', onEnd);
         };
 
-        // Mouse handlers
+        // Mouse
         const onMouseDown = (e) => {
             e.preventDefault();
-            dragging.current = true;
-            const val = valueFromX(e.clientX);
-            updateVisuals(val);
-            onChange(val);
+            updateVisuals(valueFromX(e.clientX));
 
             const onMove = (ev) => {
-                const v = valueFromX(ev.clientX);
-                updateVisuals(v);
-                onChange(v);
+                updateVisuals(valueFromX(ev.clientX));
             };
             const onUp = () => {
-                dragging.current = false;
+                onChange(lastValue.current);
                 document.removeEventListener('mousemove', onMove);
                 document.removeEventListener('mouseup', onUp);
             };
@@ -883,21 +878,23 @@ function ROICalculator({ onAssessmentClick }) {
                     onTouchStart={onTouchStart}
                     onMouseDown={onMouseDown}
                     style={{
-                        position: 'relative', width: '100%', height: 40,
+                        position: 'relative', width: '100%', height: 44,
                         cursor: 'pointer', touchAction: 'none',
                         display: 'flex', alignItems: 'center',
+                        WebkitUserSelect: 'none', userSelect: 'none',
                     }}
                 >
                     {/* Background track */}
                     <div style={{
                         position: 'absolute', left: 0, right: 0, height: 8,
                         borderRadius: 4, background: '#e5e7eb',
+                        pointerEvents: 'none',
                     }} />
                     {/* Filled track */}
                     <div ref={fillRef} style={{
                         position: 'absolute', left: 0, height: 8,
                         borderRadius: 4, background: BRAND.teal,
-                        width: `${pct}%`, transition: dragging.current ? 'none' : 'width 0.1s',
+                        width: `${pct}%`, pointerEvents: 'none',
                     }} />
                     {/* Thumb */}
                     <div ref={thumbRef} style={{
@@ -906,10 +903,10 @@ function ROICalculator({ onAssessmentClick }) {
                         background: BRAND.teal, border: '3px solid white',
                         boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                         transform: 'translateX(-50%)',
-                        transition: dragging.current ? 'none' : 'left 0.1s',
+                        pointerEvents: 'none',
                     }} />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 0 }}>
                     <span style={{ fontSize: 11, color: '#9ca3af' }}>{suffix === '$' ? `$${min.toLocaleString()}` : `${min}${suffix}`}</span>
                     <span style={{ fontSize: 11, color: '#9ca3af' }}>{suffix === '$' ? `$${max.toLocaleString()}` : `${max}${suffix}`}</span>
                 </div>
