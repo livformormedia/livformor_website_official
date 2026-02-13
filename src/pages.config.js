@@ -49,18 +49,26 @@
  */
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
+import CashOffer from './pages/CashOffer';
 import ExportHTML from './pages/ExportHTML';
 import Home from './pages/Home';
+import Services from './pages/Services';
 import ThankYou from './pages/ThankYou';
+import ThankYouBasic from './pages/ThankYouBasic';
+import ThankYouBooked from './pages/ThankYouBooked';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "Blog": Blog,
     "BlogPost": BlogPost,
+    "cash-offer": CashOffer,
     "ExportHTML": ExportHTML,
     "Home": Home,
+    "services": Services,
     "ThankYou": ThankYou,
+    "ThankYouBasic": ThankYouBasic,
+    "ThankYouBooked": ThankYouBooked,
 }
 
 export const pagesConfig = {

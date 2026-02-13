@@ -30,35 +30,47 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
-      // Send to webhook
-      await fetch('https://services.leadconnectorhq.com/hooks/MSFgME5t3cZZRgzhEnI2/webhook-trigger/44b1231f-f69c-4962-9437-a661d0ec24fc', {
+      // Send to Vercel API Proxy (which forwards to GHL)
+      const response = await fetch('/api/ghl-proxy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData)
       });
-      
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
       if (onSubmit) {
         onSubmit(formData);
       }
     } catch (error) {
       console.error('Error submitting form:', error);
+      // Optional: Show user error feedback here
     }
-    
+
     setIsSubmitting(false);
-    
-    // Track Facebook event
-    if (typeof fbq !== 'undefined') {
-      fbq('track', 'CompleteRegistration', {
+
+    // Track Facebook event - Lead
+    if (typeof window.fbq !== 'undefined') {
+      window.fbq('track', 'Lead', {
         content_name: 'Resource Form Submission',
         content_category: 'Lead',
+        status: 'completed',
+        value: 0.00,
+        currency: 'USD'
+      });
+      // Also track CompleteRegistration for legacy compatibility if needed
+      window.fbq('track', 'CompleteRegistration', {
+        content_name: 'Resource Form Submission',
         status: 'completed'
       });
     }
-    
+
     // Redirect to Thank You page
     window.location.href = '/ThankYou';
   };
@@ -115,7 +127,7 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
           {/* Progress Bar */}
           <div className="px-6 pt-4">
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className="bg-gradient-to-r from-teal-500 to-blue-600 h-2 rounded-full transition-all duration-500"
                 style={{ width: step === 1 ? '33%' : step === 2 ? '66%' : '100%' }}
               ></div>
@@ -130,7 +142,7 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
-                    <Input 
+                    <Input
                       value={formData.firstName}
                       onChange={e => handleChange('firstName', e.target.value)}
                       placeholder="John"
@@ -139,7 +151,7 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
-                    <Input 
+                    <Input
                       value={formData.lastName}
                       onChange={e => handleChange('lastName', e.target.value)}
                       placeholder="Smith"
@@ -149,7 +161,7 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                  <Input 
+                  <Input
                     type="email"
                     value={formData.email}
                     onChange={e => handleChange('email', e.target.value)}
@@ -159,7 +171,7 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                  <Input 
+                  <Input
                     type="tel"
                     value={formData.phone}
                     onChange={e => handleChange('phone', e.target.value)}
@@ -167,7 +179,7 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
                   />
                 </div>
               </div>
-              <Button 
+              <Button
                 onClick={handleNext}
                 disabled={!formData.firstName || !formData.lastName || !formData.email}
                 className="w-full mt-6 bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white py-3 rounded-full font-semibold"
@@ -185,7 +197,7 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Clinic Name *</label>
-                  <Input 
+                  <Input
                     value={formData.clinicName}
                     onChange={e => handleChange('clinicName', e.target.value)}
                     placeholder="Your Clinic Name"
@@ -237,7 +249,7 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
                   </Select>
                 </div>
               </div>
-              <Button 
+              <Button
                 type="submit"
                 disabled={!formData.clinicName || !formData.clinicType || isSubmitting}
                 className="w-full mt-6 bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white py-3 rounded-full font-semibold"
@@ -272,14 +284,14 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
                   Want to accelerate your growth even faster?
                 </p>
               </div>
-              <Button 
+              <Button
                 className="w-full bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white py-3 rounded-full font-semibold"
                 onClick={resetAndClose}
               >
                 Book a Free Strategy Call
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
-              <button 
+              <button
                 onClick={resetAndClose}
                 className="mt-4 text-gray-500 hover:text-gray-700 text-sm"
               >

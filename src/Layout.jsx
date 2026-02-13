@@ -14,14 +14,14 @@ export default function Layout({ children }) {
           t.src=v;s=b.getElementsByTagName(e)[0];
           s.parentNode.insertBefore(t,s)}(window, document,'script',
           'https://connect.facebook.net/en_US/fbevents.js');
-          fbq('init', 'YOUR_PIXEL_ID');
+          fbq('init', '822229636864741');
           fbq('track', 'PageView');
         `
       }} />
       <noscript dangerouslySetInnerHTML={{
-        __html: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1" />`
+        __html: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=822229636864741&ev=PageView&noscript=1" />`
       }} />
-      
+
       <style jsx>{`
         @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
         
