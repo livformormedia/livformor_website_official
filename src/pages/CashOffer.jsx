@@ -796,32 +796,74 @@ function ROICalculator({ onAssessmentClick }) {
         background: `linear-gradient(to right, ${BRAND.teal} 0%, ${BRAND.teal} ${(value / max) * 100}%, #e5e7eb ${(value / max) * 100}%, #e5e7eb 100%)`,
     });
 
-    const SliderField = ({ label, value, onChange, min = 0, max = 100, step = 1, suffix = '%', icon }) => (
-        <div style={{ marginBottom: 28 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <label style={{ fontSize: 14, fontWeight: 700, color: BRAND.dark, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {icon} {label}
-                </label>
-                <span style={{
-                    fontSize: 22, fontWeight: 800, color: BRAND.teal,
-                    background: 'rgba(15,118,110,0.08)', padding: '4px 14px', borderRadius: 8,
-                }}>{suffix === '$' ? `$${value.toLocaleString()}` : `${value}${suffix}`}</span>
+    const SliderField = ({ label, value, onChange, min = 0, max = 100, step = 1, suffix = '%', icon }) => {
+        const inputRef = React.useRef(null);
+        const displayRef = React.useRef(null);
+        const isDragging = React.useRef(false);
+
+        // Keep the display in sync without re-rendering
+        const updateDisplay = (val) => {
+            if (displayRef.current) {
+                displayRef.current.textContent = suffix === '$' ? `$${Number(val).toLocaleString()}` : `${val}${suffix}`;
+            }
+        };
+
+        // On touch/mouse start, switch to uncontrolled mode
+        const handleStart = () => {
+            isDragging.current = true;
+        };
+
+        // While dragging, only update the display text — no React state
+        const handleInput = (e) => {
+            updateDisplay(e.target.value);
+        };
+
+        // On release, commit the final value to React state
+        const handleEnd = () => {
+            if (isDragging.current && inputRef.current) {
+                isDragging.current = false;
+                onChange(+inputRef.current.value);
+            }
+        };
+
+        // Sync input when value changes from outside (e.g. initial render)
+        React.useEffect(() => {
+            if (inputRef.current && !isDragging.current) {
+                inputRef.current.value = value;
+                updateDisplay(value);
+            }
+        }, [value]);
+
+        return (
+            <div style={{ marginBottom: 28 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <label style={{ fontSize: 14, fontWeight: 700, color: BRAND.dark, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {icon} {label}
+                    </label>
+                    <span ref={displayRef} style={{
+                        fontSize: 22, fontWeight: 800, color: BRAND.teal,
+                        background: 'rgba(15,118,110,0.08)', padding: '4px 14px', borderRadius: 8,
+                    }}>{suffix === '$' ? `$${value.toLocaleString()}` : `${value}${suffix}`}</span>
+                </div>
+                <input ref={inputRef} type="range" min={min} max={max} step={step} defaultValue={value}
+                    onInput={handleInput}
+                    onTouchStart={handleStart}
+                    onMouseDown={handleStart}
+                    onTouchEnd={handleEnd}
+                    onMouseUp={handleEnd}
+                    onChange={handleEnd}
+                    style={{
+                        width: '100%', height: 8, borderRadius: 4, appearance: 'none',
+                        cursor: 'pointer', outline: 'none', touchAction: 'none',
+                        ...sliderTrack(value, max),
+                    }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                    <span style={{ fontSize: 11, color: '#9ca3af' }}>{suffix === '$' ? `$${min.toLocaleString()}` : `${min}${suffix}`}</span>
+                    <span style={{ fontSize: 11, color: '#9ca3af' }}>{suffix === '$' ? `$${max.toLocaleString()}` : `${max}${suffix}`}</span>
+                </div>
             </div>
-            <input type="range" min={min} max={max} step={step} value={value}
-                onChange={e => onChange(+e.target.value)}
-                onTouchStart={e => e.target.style.touchAction = 'none'}
-                onTouchEnd={e => e.target.style.touchAction = 'auto'}
-                style={{
-                    width: '100%', height: 8, borderRadius: 4, appearance: 'none',
-                    cursor: 'pointer', outline: 'none', touchAction: 'none',
-                    ...sliderTrack(value, max),
-                }} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                <span style={{ fontSize: 11, color: '#9ca3af' }}>{suffix === '$' ? `$${min.toLocaleString()}` : `${min}${suffix}`}</span>
-                <span style={{ fontSize: 11, color: '#9ca3af' }}>{suffix === '$' ? `$${max.toLocaleString()}` : `${max}${suffix}`}</span>
-            </div>
-        </div>
-    );
+        );
+    };
 
     return (
         <section id="calculator" style={{ padding: '80px 24px', background: BRAND.lightBg }}>
