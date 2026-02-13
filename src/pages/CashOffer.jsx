@@ -554,24 +554,26 @@ function AssessmentModal({ isOpen, onClose }) {
     };
 
     return (
-        <div style={{
+        <div onClick={onClose} style={{
             position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center',
             justifyContent: 'center', background: 'rgba(13,59,64,0.85)', backdropFilter: 'blur(6px)',
             padding: 16, overflowY: 'auto',
         }}>
-            <div style={{
+            <div onClick={e => e.stopPropagation()} style={{
                 position: 'relative', width: '100%', maxWidth: 600, background: 'white',
                 borderRadius: 20, boxShadow: '0 25px 60px rgba(0,0,0,0.35)', maxHeight: '92vh',
                 overflowY: 'auto', border: '1px solid #e5e7eb',
             }}>
                 <button onClick={onClose} style={{
-                    position: 'sticky', top: 0, float: 'right', background: 'white', border: 'none',
-                    cursor: 'pointer', padding: 16, borderRadius: '0 20px 0 12px', zIndex: 10,
+                    position: 'absolute', top: 12, right: 12, background: 'white', border: 'none',
+                    cursor: 'pointer', padding: 8, borderRadius: '50%', zIndex: 20,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', width: 36, height: 36,
                 }}>
-                    <X size={22} color="#6b7280" />
+                    <X size={20} color="#6b7280" />
                 </button>
 
-                <div style={{ padding: '24px 28px 28px', clear: 'both' }}>
+                <div style={{ padding: '24px 28px 28px' }}>
                     {/* Progress */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 28 }}>
                         <div style={{
@@ -1215,8 +1217,6 @@ export default function CashOffer() {
                     position: 'relative', width: '100%', maxWidth: 1200, margin: '0 auto',
                     textAlign: 'center', color: 'white', zIndex: 10,
                 }}>
-                    <img src={LOGO_URL} alt="LivForMor Media"
-                        style={{ height: 64, margin: '0 auto 40px', opacity: 0.9, filter: 'brightness(0) invert(1)' }} />
 
                     <div style={{
                         display: 'inline-flex', alignItems: 'center', gap: 8,
