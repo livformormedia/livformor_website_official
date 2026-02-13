@@ -992,7 +992,39 @@ function ROICalculator({ onAssessmentClick }) {
 
                     {/* RESULTS PANEL */}
                     <div>
-                        {/* Funnel Flow */}
+                        {/* Profit breakdown — FIRST so they see the money immediately */}
+                        <div style={{ background: 'white', padding: 24, borderRadius: 14, border: `2px solid ${profit > 0 ? '#22c55e' : '#ef4444'}`, position: 'relative', marginBottom: 16 }}>
+                            <div style={{
+                                position: 'absolute', top: -12, left: 20, background: profit > 0 ? '#22c55e' : '#ef4444', color: 'white',
+                                padding: '4px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+                            }}>{profit > 0 ? 'NET PROFIT' : 'NET LOSS'}</div>
+
+                            <div style={{ paddingTop: 16, textAlign: 'center' }}>
+                                <div style={{ fontSize: 14, fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>Your Estimated Profit</div>
+                                <div style={{ fontSize: 48, fontWeight: 800, color: profit > 0 ? '#0d9488' : '#ef4444' }}>
+                                    ${profit.toLocaleString()}
+                                </div>
+                                <div style={{ fontSize: 14, color: '#9ca3af', marginTop: 4 }}>{roi}% ROI</div>
+                            </div>
+                        </div>
+
+                        {/* Financial Results */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
+                            <div style={{ background: 'white', padding: 18, borderRadius: 12, textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#9ca3af', textTransform: 'uppercase' }}>REVENUE</div>
+                                <div style={{ fontSize: 22, fontWeight: 800, color: BRAND.teal }}>${revenue.toLocaleString()}</div>
+                            </div>
+                            <div style={{ background: 'white', padding: 18, borderRadius: 12, textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#9ca3af', textTransform: 'uppercase' }}>AD SPEND</div>
+                                <div style={{ fontSize: 22, fontWeight: 800, color: '#374151' }}>${adSpend.toLocaleString()}</div>
+                            </div>
+                            <div style={{ background: 'white', padding: 18, borderRadius: 12, textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#9ca3af', textTransform: 'uppercase' }}>PERF. FEES</div>
+                                <div style={{ fontSize: 22, fontWeight: 800, color: '#374151' }}>${perfFee.toLocaleString()}</div>
+                            </div>
+                        </div>
+
+                        {/* Funnel Breakdown — below the numbers */}
                         <div style={{ background: 'white', padding: 24, borderRadius: 16, boxShadow: '0 4px 20px rgba(0,0,0,0.06)', marginBottom: 16, textAlign: 'left' }}>
                             <h3 style={{ fontSize: 15, fontWeight: 700, color: BRAND.dark, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
                                 <BarChart3 size={18} color={BRAND.teal} /> Your Funnel Breakdown
@@ -1024,38 +1056,6 @@ function ROICalculator({ onAssessmentClick }) {
                                     </div>
                                 </div>
                             ))}
-                        </div>
-
-                        {/* Financial Results */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
-                            <div style={{ background: 'white', padding: 18, borderRadius: 12, textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#9ca3af', textTransform: 'uppercase' }}>REVENUE</div>
-                                <div style={{ fontSize: 22, fontWeight: 800, color: BRAND.teal }}>${revenue.toLocaleString()}</div>
-                            </div>
-                            <div style={{ background: 'white', padding: 18, borderRadius: 12, textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#9ca3af', textTransform: 'uppercase' }}>AD SPEND</div>
-                                <div style={{ fontSize: 22, fontWeight: 800, color: '#374151' }}>${adSpend.toLocaleString()}</div>
-                            </div>
-                            <div style={{ background: 'white', padding: 18, borderRadius: 12, textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
-                                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: '#9ca3af', textTransform: 'uppercase' }}>PERF. FEES</div>
-                                <div style={{ fontSize: 22, fontWeight: 800, color: '#374151' }}>${perfFee.toLocaleString()}</div>
-                            </div>
-                        </div>
-
-                        {/* Profit breakdown */}
-                        <div style={{ background: 'white', padding: 24, borderRadius: 14, border: `2px solid ${profit > 0 ? '#22c55e' : '#ef4444'}`, position: 'relative' }}>
-                            <div style={{
-                                position: 'absolute', top: -12, left: 20, background: profit > 0 ? '#22c55e' : '#ef4444', color: 'white',
-                                padding: '4px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700,
-                            }}>{profit > 0 ? 'NET PROFIT' : 'NET LOSS'}</div>
-
-                            <div style={{ paddingTop: 16, textAlign: 'center' }}>
-                                <div style={{ fontSize: 14, fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>Your Estimated Profit</div>
-                                <div style={{ fontSize: 48, fontWeight: 800, color: profit > 0 ? '#0d9488' : '#ef4444' }}>
-                                    ${profit.toLocaleString()}
-                                </div>
-                                <div style={{ fontSize: 14, color: '#9ca3af', marginTop: 4 }}>{roi}% ROI</div>
-                            </div>
                         </div>
 
                         <p style={{ fontSize: 13, color: '#9ca3af', textAlign: 'center', marginTop: 10, fontStyle: 'italic' }}>
