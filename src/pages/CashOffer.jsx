@@ -792,47 +792,79 @@ function ROICalculator({ onAssessmentClick }) {
     const profit = revenue - totalCost;
     const roi = totalCost > 0 ? Math.round((profit / totalCost) * 100) : 0;
 
-    const sliderTrack = (value, max = 100) => ({
-        background: `linear-gradient(to right, ${BRAND.teal} 0%, ${BRAND.teal} ${(value / max) * 100}%, #e5e7eb ${(value / max) * 100}%, #e5e7eb 100%)`,
-    });
-
     const SliderField = ({ label, value, onChange, min = 0, max = 100, step = 1, suffix = '%', icon }) => {
-        const inputRef = React.useRef(null);
+        const trackRef = React.useRef(null);
+        const thumbRef = React.useRef(null);
+        const fillRef = React.useRef(null);
         const displayRef = React.useRef(null);
-        const isDragging = React.useRef(false);
+        const dragging = React.useRef(false);
 
-        // Keep the display in sync without re-rendering
-        const updateDisplay = (val) => {
+        const pct = ((value - min) / (max - min)) * 100;
+
+        const snap = (raw) => {
+            const snapped = Math.round(raw / step) * step;
+            return Math.min(max, Math.max(min, snapped));
+        };
+
+        const valueFromX = (clientX) => {
+            const rect = trackRef.current.getBoundingClientRect();
+            const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+            return snap(min + ratio * (max - min));
+        };
+
+        const updateVisuals = (val) => {
+            const p = ((val - min) / (max - min)) * 100;
+            if (fillRef.current) fillRef.current.style.width = p + '%';
+            if (thumbRef.current) thumbRef.current.style.left = p + '%';
             if (displayRef.current) {
                 displayRef.current.textContent = suffix === '$' ? `$${Number(val).toLocaleString()}` : `${val}${suffix}`;
             }
         };
 
-        // On touch/mouse start, switch to uncontrolled mode
-        const handleStart = () => {
-            isDragging.current = true;
+        // Touch handlers
+        const onTouchStart = (e) => {
+            e.preventDefault();
+            dragging.current = true;
+            const val = valueFromX(e.touches[0].clientX);
+            updateVisuals(val);
+            onChange(val);
+
+            const onMove = (ev) => {
+                ev.preventDefault();
+                const v = valueFromX(ev.touches[0].clientX);
+                updateVisuals(v);
+                onChange(v);
+            };
+            const onEnd = () => {
+                dragging.current = false;
+                document.removeEventListener('touchmove', onMove);
+                document.removeEventListener('touchend', onEnd);
+            };
+            document.addEventListener('touchmove', onMove, { passive: false });
+            document.addEventListener('touchend', onEnd);
         };
 
-        // While dragging, only update the display text — no React state
-        const handleInput = (e) => {
-            updateDisplay(e.target.value);
-        };
+        // Mouse handlers
+        const onMouseDown = (e) => {
+            e.preventDefault();
+            dragging.current = true;
+            const val = valueFromX(e.clientX);
+            updateVisuals(val);
+            onChange(val);
 
-        // On release, commit the final value to React state
-        const handleEnd = () => {
-            if (isDragging.current && inputRef.current) {
-                isDragging.current = false;
-                onChange(+inputRef.current.value);
-            }
+            const onMove = (ev) => {
+                const v = valueFromX(ev.clientX);
+                updateVisuals(v);
+                onChange(v);
+            };
+            const onUp = () => {
+                dragging.current = false;
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onUp);
+            };
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onUp);
         };
-
-        // Sync input when value changes from outside (e.g. initial render)
-        React.useEffect(() => {
-            if (inputRef.current && !isDragging.current) {
-                inputRef.current.value = value;
-                updateDisplay(value);
-            }
-        }, [value]);
 
         return (
             <div style={{ marginBottom: 28 }}>
@@ -845,18 +877,38 @@ function ROICalculator({ onAssessmentClick }) {
                         background: 'rgba(15,118,110,0.08)', padding: '4px 14px', borderRadius: 8,
                     }}>{suffix === '$' ? `$${value.toLocaleString()}` : `${value}${suffix}`}</span>
                 </div>
-                <input ref={inputRef} type="range" min={min} max={max} step={step} defaultValue={value}
-                    onInput={handleInput}
-                    onTouchStart={handleStart}
-                    onMouseDown={handleStart}
-                    onTouchEnd={handleEnd}
-                    onMouseUp={handleEnd}
-                    onChange={handleEnd}
+                {/* Custom slider track */}
+                <div
+                    ref={trackRef}
+                    onTouchStart={onTouchStart}
+                    onMouseDown={onMouseDown}
                     style={{
-                        width: '100%', height: 8, borderRadius: 4, appearance: 'none',
-                        cursor: 'pointer', outline: 'none', touchAction: 'none',
-                        ...sliderTrack(value, max),
+                        position: 'relative', width: '100%', height: 40,
+                        cursor: 'pointer', touchAction: 'none',
+                        display: 'flex', alignItems: 'center',
+                    }}
+                >
+                    {/* Background track */}
+                    <div style={{
+                        position: 'absolute', left: 0, right: 0, height: 8,
+                        borderRadius: 4, background: '#e5e7eb',
                     }} />
+                    {/* Filled track */}
+                    <div ref={fillRef} style={{
+                        position: 'absolute', left: 0, height: 8,
+                        borderRadius: 4, background: BRAND.teal,
+                        width: `${pct}%`, transition: dragging.current ? 'none' : 'width 0.1s',
+                    }} />
+                    {/* Thumb */}
+                    <div ref={thumbRef} style={{
+                        position: 'absolute', left: `${pct}%`,
+                        width: 24, height: 24, borderRadius: '50%',
+                        background: BRAND.teal, border: '3px solid white',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                        transform: 'translateX(-50%)',
+                        transition: dragging.current ? 'none' : 'left 0.1s',
+                    }} />
+                </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
                     <span style={{ fontSize: 11, color: '#9ca3af' }}>{suffix === '$' ? `$${min.toLocaleString()}` : `${min}${suffix}`}</span>
                     <span style={{ fontSize: 11, color: '#9ca3af' }}>{suffix === '$' ? `$${max.toLocaleString()}` : `${max}${suffix}`}</span>
@@ -1027,49 +1079,7 @@ function ROICalculator({ onAssessmentClick }) {
                 </div>
             </div>
 
-            <style>{`
-                input[type="range"] {
-                    -webkit-appearance: none;
-                    appearance: none;
-                    width: 100%;
-                    height: 8px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    outline: none;
-                }
-                input[type="range"]::-webkit-slider-thumb {
-                    -webkit-appearance: none;
-                    appearance: none;
-                    width: 24px; height: 24px; border-radius: 50%;
-                    background: ${BRAND.teal}; cursor: grab;
-                    border: 3px solid white;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-                    margin-top: -8px;
-                }
-                input[type="range"]::-webkit-slider-thumb:active {
-                    cursor: grabbing;
-                    transform: scale(1.15);
-                    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
-                }
-                input[type="range"]::-moz-range-thumb {
-                    width: 24px; height: 24px; border-radius: 50%;
-                    background: ${BRAND.teal}; cursor: grab;
-                    border: 3px solid white;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-                }
-                input[type="range"]::-moz-range-thumb:active {
-                    cursor: grabbing;
-                    transform: scale(1.15);
-                }
-                input[type="range"]::-webkit-slider-runnable-track {
-                    height: 8px;
-                    border-radius: 4px;
-                }
-                input[type="range"]::-moz-range-track {
-                    height: 8px;
-                    border-radius: 4px;
-                }
-            `}</style>
+
         </section>
     );
 }
