@@ -809,9 +809,11 @@ function ROICalculator({ onAssessmentClick }) {
             </div>
             <input type="range" min={min} max={max} step={step} value={value}
                 onChange={e => onChange(+e.target.value)}
+                onTouchStart={e => e.target.style.touchAction = 'none'}
+                onTouchEnd={e => e.target.style.touchAction = 'auto'}
                 style={{
                     width: '100%', height: 8, borderRadius: 4, appearance: 'none',
-                    cursor: 'pointer', outline: 'none',
+                    cursor: 'pointer', outline: 'none', touchAction: 'none',
                     ...sliderTrack(value, max),
                 }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
@@ -992,34 +994,26 @@ function ROICalculator({ onAssessmentClick }) {
                     border-radius: 4px;
                     cursor: pointer;
                     outline: none;
-                    touch-action: none;
-                    -webkit-tap-highlight-color: transparent;
-                    padding: 16px 0;
-                    margin: -16px 0;
-                    box-sizing: content-box;
-                    background: transparent;
                 }
                 input[type="range"]::-webkit-slider-thumb {
                     -webkit-appearance: none;
                     appearance: none;
-                    width: 36px; height: 36px; border-radius: 50%;
+                    width: 24px; height: 24px; border-radius: 50%;
                     background: ${BRAND.teal}; cursor: grab;
                     border: 3px solid white;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-                    margin-top: -14px;
-                    position: relative;
-                    z-index: 2;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    margin-top: -8px;
                 }
                 input[type="range"]::-webkit-slider-thumb:active {
                     cursor: grabbing;
                     transform: scale(1.15);
-                    box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+                    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
                 }
                 input[type="range"]::-moz-range-thumb {
-                    width: 36px; height: 36px; border-radius: 50%;
+                    width: 24px; height: 24px; border-radius: 50%;
                     background: ${BRAND.teal}; cursor: grab;
                     border: 3px solid white;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
                 }
                 input[type="range"]::-moz-range-thumb:active {
                     cursor: grabbing;
