@@ -549,10 +549,10 @@ function HeroSection() {
             ref={sectionRef}
             onMouseMove={handleMouseMove}
             style={{
-                minHeight: '100vh',
+                minHeight: '100svh',
                 position: 'relative',
                 overflow: 'hidden',
-                background: BRAND.dark,
+                background: '#091f22',
             }}
         >
             {/* LiquidGradient base */}
@@ -571,8 +571,8 @@ function HeroSection() {
                 position: 'relative', zIndex: 3,
                 display: 'flex', flexDirection: 'column',
                 justifyContent: 'center', alignItems: 'center', textAlign: 'center',
-                padding: '120px 24px 100px',
-                minHeight: '100vh',
+                padding: '60px 24px 40px',
+                minHeight: '100svh',
             }}>
                 {/* Subtle grid overlay */}
                 <div style={{
@@ -580,16 +580,6 @@ function HeroSection() {
                     backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
                     backgroundSize: '40px 40px',
                 }} />
-
-                {/* Logo — slides down */}
-                <div style={{
-                    animation: 'heroSlideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                    opacity: 0,
-                    transform: `translate(${px * 0.3}px, ${py * 0.3}px)`,
-                }}>
-                    <img src={LOGO_URL} alt="LivForMor Media"
-                        style={{ height: 48, marginBottom: 40, filter: 'brightness(1.15) drop-shadow(0 0 20px rgba(197,184,150,0.3))' }} />
-                </div>
 
                 {/* Badge — pops in */}
                 <div style={{
@@ -601,12 +591,12 @@ function HeroSection() {
                         display: 'inline-flex', alignItems: 'center', gap: 8,
                         background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(16px)',
                         border: '1px solid rgba(197,184,150,0.25)', borderRadius: 50,
-                        padding: '10px 24px', marginBottom: 36, fontSize: 14,
+                        padding: '8px 20px', marginBottom: 20, fontSize: 13,
                         fontWeight: 600, color: BRAND.gold,
                         boxShadow: '0 0 30px rgba(197,184,150,0.1)',
                         animation: 'heroBadgeGlow 3s ease-in-out infinite',
                     }}>
-                        <Sparkles size={16} style={{ animation: 'heroSparkleRotate 3s linear infinite' }} />
+                        <Sparkles size={14} style={{ animation: 'heroSparkleRotate 3s linear infinite' }} />
                         For Spravato, Ketamine & TMS Clinics
                     </div>
                 </div>
@@ -617,8 +607,8 @@ function HeroSection() {
                     transition: 'transform 0.15s ease-out',
                 }}>
                     <h1 style={{
-                        fontSize: 'clamp(34px, 5.5vw, 68px)', fontWeight: 800,
-                        color: 'white', lineHeight: 1.08, maxWidth: 850, marginBottom: 28,
+                        fontSize: 'clamp(28px, 5vw, 62px)', fontWeight: 800,
+                        color: 'white', lineHeight: 1.08, maxWidth: 850, marginBottom: 18,
                         letterSpacing: '-0.03em',
                     }}>
                         <span style={{
@@ -655,8 +645,8 @@ function HeroSection() {
                     transform: `translate(${px * 0.15}px, ${py * 0.15}px)`,
                 }}>
                     <p style={{
-                        fontSize: 'clamp(16px, 2vw, 20px)', color: 'rgba(255,255,255,0.75)',
-                        maxWidth: 620, lineHeight: 1.7, marginBottom: 48,
+                        fontSize: 'clamp(15px, 1.8vw, 19px)', color: 'rgba(255,255,255,0.75)',
+                        maxWidth: 600, lineHeight: 1.6, marginBottom: 28,
                         textShadow: '0 2px 8px rgba(0,0,0,0.3)',
                     }}>
                         Most clinic ads fail because they market treatments like products.
@@ -670,11 +660,11 @@ function HeroSection() {
                     animation: 'heroCtaEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.8s forwards',
                     opacity: 0,
                 }}>
-                    <button onClick={() => scrollTo('problem')} style={{
+                    <button onClick={() => scrollTo('contact')} style={{
                         background: `linear-gradient(135deg, ${BRAND.gold}, ${BRAND.goldDark})`,
                         color: BRAND.dark, border: 'none', borderRadius: 50,
-                        padding: '20px 44px', fontSize: 18, fontWeight: 800,
-                        cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 12,
+                        padding: '16px 36px', fontSize: 16, fontWeight: 800,
+                        cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 10,
                         boxShadow: '0 8px 32px rgba(197,184,150,0.3)',
                         transition: 'transform 0.25s ease, box-shadow 0.25s ease',
                         animation: 'heroCtaGlow 2.5s ease-in-out 3s infinite',
@@ -698,7 +688,7 @@ function HeroSection() {
                             animation: 'heroButtonSweep 3s ease-in-out 3.5s infinite',
                         }} />
                         <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 10 }}>
-                            See How We Help Clinics Grow <ArrowRight size={18} />
+                            I Want More Patients <ArrowRight size={18} />
                         </span>
                     </button>
                 </div>
@@ -707,10 +697,10 @@ function HeroSection() {
                 <div style={{
                     animation: 'heroFadeUp 0.6s ease 2.2s forwards',
                     opacity: 0,
-                    marginTop: 32,
+                    marginTop: 20,
                 }}>
                     <div style={{
-                        display: 'flex', flexWrap: 'wrap', gap: 20, justifyContent: 'center',
+                        display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center',
                         maxWidth: 700,
                     }}>
                         {[
@@ -2070,11 +2060,83 @@ export default function Services() {
 
             <HeroSection />
             <ProblemSection />
+
+            {/* ─── INLINE CTA 1 ─── */}
+            <div style={{
+                padding: '48px 24px', textAlign: 'center',
+                background: `linear-gradient(135deg, ${BRAND.dark}, #0a3a3f)`,
+            }}>
+                <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.7)', marginBottom: 16, fontWeight: 500 }}>
+                    Ready to fix your ads?
+                </p>
+                <button onClick={() => scrollTo('contact')} style={{
+                    background: `linear-gradient(135deg, ${BRAND.gold}, ${BRAND.goldDark})`,
+                    color: BRAND.dark, border: 'none', borderRadius: 50,
+                    padding: '14px 32px', fontSize: 15, fontWeight: 800,
+                    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8,
+                    boxShadow: '0 6px 24px rgba(197,184,150,0.3)',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                }}
+                    onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 36px rgba(197,184,150,0.4)'; }}
+                    onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(197,184,150,0.3)'; }}
+                >
+                    I Want More Patients <ArrowRight size={16} />
+                </button>
+            </div>
+
             <BeliefBridgeSection />
             <CareFrameworkSection />
+
+            {/* ─── INLINE CTA 2 ─── */}
+            <div style={{
+                padding: '48px 24px', textAlign: 'center',
+                background: BRAND.dark,
+            }}>
+                <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.7)', marginBottom: 16, fontWeight: 500 }}>
+                    See how this works for your clinic specifically.
+                </p>
+                <button onClick={() => scrollTo('contact')} style={{
+                    background: `linear-gradient(135deg, ${BRAND.gold}, ${BRAND.goldDark})`,
+                    color: BRAND.dark, border: 'none', borderRadius: 50,
+                    padding: '14px 32px', fontSize: 15, fontWeight: 800,
+                    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8,
+                    boxShadow: '0 6px 24px rgba(197,184,150,0.3)',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                }}
+                    onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 36px rgba(197,184,150,0.4)'; }}
+                    onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(197,184,150,0.3)'; }}
+                >
+                    I Want More Patients <ArrowRight size={16} />
+                </button>
+            </div>
+
             <SocialProofSection />
             <FounderStorySection />
             <GuaranteeSection />
+
+            {/* ─── INLINE CTA 3 ─── */}
+            <div style={{
+                padding: '48px 24px', textAlign: 'center',
+                background: `linear-gradient(135deg, #0a3a3f, ${BRAND.dark})`,
+            }}>
+                <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.7)', marginBottom: 16, fontWeight: 500 }}>
+                    Risk-free. Results-guaranteed.
+                </p>
+                <button onClick={() => scrollTo('contact')} style={{
+                    background: `linear-gradient(135deg, ${BRAND.gold}, ${BRAND.goldDark})`,
+                    color: BRAND.dark, border: 'none', borderRadius: 50,
+                    padding: '14px 32px', fontSize: 15, fontWeight: 800,
+                    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8,
+                    boxShadow: '0 6px 24px rgba(197,184,150,0.3)',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                }}
+                    onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 36px rgba(197,184,150,0.4)'; }}
+                    onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(197,184,150,0.3)'; }}
+                >
+                    I Want More Patients <ArrowRight size={16} />
+                </button>
+            </div>
+
             <PartnershipCriteriaSection />
             <ContactSection />
             <FAQSection />
@@ -2083,18 +2145,19 @@ export default function Services() {
             {/* ─── FLOATING CTA BUTTON ─── */}
             {showFloatingCTA && (
                 <button onClick={() => scrollTo('contact')} style={{
-                    position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)', zIndex: 999,
+                    position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 999,
                     background: `linear-gradient(135deg, ${BRAND.gold}, ${BRAND.goldDark})`,
                     color: BRAND.dark, border: 'none', borderRadius: 50,
-                    padding: '16px 28px', fontSize: 15, fontWeight: 800,
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '12px 24px', fontSize: 14, fontWeight: 800,
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
                     boxShadow: '0 8px 32px rgba(197,184,150,0.4)',
                     animation: 'pulseGlow 2.5s ease-in-out infinite, floatCTA 3s ease-in-out infinite',
+                    whiteSpace: 'nowrap',
                 }}
                     onMouseOver={e => { e.currentTarget.style.transform = 'translateX(-50%) scale(1.05)'; }}
                     onMouseOut={e => { e.currentTarget.style.transform = 'translateX(-50%) scale(1)'; }}
                 >
-                    I Want More Patients <ArrowRight size={16} />
+                    I Want More Patients <ArrowRight size={14} />
                 </button>
             )}
         </div>

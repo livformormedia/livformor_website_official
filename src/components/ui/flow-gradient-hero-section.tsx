@@ -71,20 +71,18 @@ class GradientBackground {
         this.uniforms = {
             uTime: { value: 0 },
             uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-            // Brand Colors Mapping:
-            // Gold: #C5B896 -> (0.77, 0.72, 0.59)
-            // Dark Teal: #0B2B2E -> (0.04, 0.17, 0.18)
-            uColor1: { value: new THREE.Vector3(0.772, 0.722, 0.588) }, // Gold
-            uColor2: { value: new THREE.Vector3(0.043, 0.169, 0.180) }, // Dark Teal
-            uColor3: { value: new THREE.Vector3(0.65, 0.60, 0.45) },    // Muted Gold
-            uColor4: { value: new THREE.Vector3(0.08, 0.25, 0.27) },    // Lighter Teal
-            uColor5: { value: new THREE.Vector3(0.772, 0.722, 0.588) }, // Gold
-            uColor6: { value: new THREE.Vector3(0.043, 0.169, 0.180) }, // Dark Teal
-            uSpeed: { value: 1.0 }, uIntensity: { value: 1.5 },
-            uTouchTexture: { value: null }, uGrainIntensity: { value: 0.05 },
-            uDarkNavy: { value: new THREE.Vector3(0.043, 0.169, 0.180) }, // Dark Teal base
+            // ALL colors are dark teal — single color family, no gold
+            uColor1: { value: new THREE.Vector3(0.05, 0.18, 0.20) },  // Teal 1
+            uColor2: { value: new THREE.Vector3(0.03, 0.12, 0.13) },  // Teal 2 (darker)
+            uColor3: { value: new THREE.Vector3(0.04, 0.15, 0.16) },  // Teal 3
+            uColor4: { value: new THREE.Vector3(0.035, 0.13, 0.14) }, // Teal 4
+            uColor5: { value: new THREE.Vector3(0.045, 0.16, 0.18) }, // Teal 5
+            uColor6: { value: new THREE.Vector3(0.03, 0.11, 0.12) },  // Teal 6 (deepest)
+            uSpeed: { value: 0.6 }, uIntensity: { value: 0.8 },
+            uTouchTexture: { value: null }, uGrainIntensity: { value: 0.04 },
+            uDarkNavy: { value: new THREE.Vector3(0.03, 0.11, 0.12) },
             uGradientSize: { value: 0.5 }, uGradientCount: { value: 12.0 },
-            uColor1Weight: { value: 0.6 }, uColor2Weight: { value: 1.5 }
+            uColor1Weight: { value: 1.0 }, uColor2Weight: { value: 1.0 }
         };
     }
     init() {
