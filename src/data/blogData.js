@@ -12,7 +12,7 @@ const BLOG_POSTS = [
         author: 'Oriel Mor',
         published_date: '2026-02-18',
         published: true,
-        featured_image: null, // Will be replaced with generated image
+        featured_image: '/blog-featured-7-mistakes.png',
         meta_description: 'Discover the 7 most common marketing mistakes that prevent ketamine and TMS clinics from growing — and get actionable fixes you can implement today. By LivForMor Media.',
         keywords: [
             'ketamine clinic marketing',
