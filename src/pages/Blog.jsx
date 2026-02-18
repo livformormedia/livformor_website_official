@@ -1,81 +1,35 @@
 import React, { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
 import { motion } from 'framer-motion';
 import { Calendar, ArrowRight, BookOpen, ArrowLeft } from 'lucide-react';
-import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import moment from 'moment';
+import { getAllPosts } from '@/data/blogData';
 
 export default function Blog() {
+  const posts = getAllPosts();
+
   useEffect(() => {
-    // SEO
     document.title = 'Blog - Mental Health Clinic Marketing Insights | LivForMor Media';
-    
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) {
-      metaDesc.setAttribute('content', 'Expert insights on mental health clinic marketing, patient acquisition strategies, and growth tactics for TMS, Ketamine, Spravato, and Psychedelic therapy clinics.');
-    } else {
-      const meta = document.createElement('meta');
-      meta.name = 'description';
-      meta.content = 'Expert insights on mental health clinic marketing, patient acquisition strategies, and growth tactics for TMS, Ketamine, Spravato, and Psychedelic therapy clinics.';
-      document.head.appendChild(meta);
-    }
 
-    const metaKeywords = document.querySelector('meta[name="keywords"]');
-    if (!metaKeywords) {
-      const meta = document.createElement('meta');
-      meta.name = 'keywords';
-      meta.content = 'mental health marketing blog, TMS clinic marketing tips, ketamine clinic growth, clinic patient acquisition, healthcare marketing insights';
-      document.head.appendChild(meta);
-    }
+    const setMeta = (attr, key, val) => {
+      let el = document.querySelector(`meta[${attr}="${key}"]`);
+      if (!el) { el = document.createElement('meta'); el.setAttribute(attr === 'property' ? 'property' : 'name', key); document.head.appendChild(el); }
+      el.setAttribute('content', val);
+    };
 
-    const metaRobots = document.querySelector('meta[name="robots"]');
-    if (!metaRobots) {
-      const meta = document.createElement('meta');
-      meta.name = 'robots';
-      meta.content = 'index, follow';
-      document.head.appendChild(meta);
-    }
-
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (!ogTitle) {
-      const meta = document.createElement('meta');
-      meta.setAttribute('property', 'og:title');
-      meta.content = 'Mental Health Clinic Marketing Blog | LivForMor Media';
-      document.head.appendChild(meta);
-    }
-
-    const ogDesc = document.querySelector('meta[property="og:description"]');
-    if (!ogDesc) {
-      const meta = document.createElement('meta');
-      meta.setAttribute('property', 'og:description');
-      meta.content = 'Expert insights on mental health clinic marketing, patient acquisition strategies, and growth tactics.';
-      document.head.appendChild(meta);
-    }
-
-    const ogType = document.querySelector('meta[property="og:type"]');
-    if (!ogType) {
-      const meta = document.createElement('meta');
-      meta.setAttribute('property', 'og:type');
-      meta.content = 'website';
-      document.head.appendChild(meta);
-    }
-
-    const twitterCard = document.querySelector('meta[name="twitter:card"]');
-    if (!twitterCard) {
-      const meta = document.createElement('meta');
-      meta.name = 'twitter:card';
-      meta.content = 'summary_large_image';
-      document.head.appendChild(meta);
-    }
+    setMeta('name', 'description', 'Expert insights on mental health clinic marketing, patient acquisition strategies, and growth tactics for TMS, Ketamine, Spravato, and Psychedelic therapy clinics.');
+    setMeta('name', 'keywords', 'mental health marketing blog, TMS clinic marketing tips, ketamine clinic growth, clinic patient acquisition, healthcare marketing insights');
+    setMeta('name', 'robots', 'index, follow');
+    setMeta('property', 'og:title', 'Mental Health Clinic Marketing Blog | LivForMor Media');
+    setMeta('property', 'og:description', 'Expert insights on mental health clinic marketing, patient acquisition strategies, and growth tactics.');
+    setMeta('property', 'og:type', 'website');
+    setMeta('name', 'twitter:card', 'summary_large_image');
   }, []);
 
-  const { data: posts = [], isLoading } = useQuery({
-    queryKey: ['blog-posts'],
-    queryFn: () => base44.entities.BlogPost.filter({ published: true }, '-published_date', 50)
-  });
+  const formatDate = (dateStr) => {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
@@ -108,12 +62,7 @@ export default function Blog() {
 
       {/* Blog Posts Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {isLoading ? (
-          <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-teal-600 border-t-transparent"></div>
-            <p className="mt-4 text-gray-600">Loading articles...</p>
-          </div>
-        ) : posts.length === 0 ? (
+        {posts.length === 0 ? (
           <div className="text-center py-20">
             <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-gray-900 mb-2">Coming Soon</h3>
@@ -130,19 +79,31 @@ export default function Blog() {
               >
                 <Link to={createPageUrl(`BlogPost?slug=${post.slug}`)} className="block group">
                   <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
-                    {post.featured_image && (
-                      <div className="aspect-video overflow-hidden">
-                        <img 
-                          src={post.featured_image} 
+                    {/* Hero gradient when no image */}
+                    <div className="aspect-video overflow-hidden relative">
+                      {post.featured_image ? (
+                        <img
+                          src={post.featured_image}
                           alt={post.title}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          loading="lazy"
                         />
-                      </div>
-                    )}
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-teal-500 via-teal-600 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <div className="text-center px-6">
+                            <BookOpen className="w-10 h-10 text-white/40 mx-auto mb-3" />
+                            <p className="text-white/60 text-xs font-medium uppercase tracking-widest">LivForMor Media</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                     <div className="p-6">
                       <div className="flex items-center text-sm text-gray-500 mb-3">
                         <Calendar className="w-4 h-4 mr-2" />
-                        {moment(post.published_date).format('MMMM D, YYYY')}
+                        {formatDate(post.published_date)}
+                        {post.reading_time && (
+                          <span className="ml-4">{post.reading_time} min read</span>
+                        )}
                       </div>
                       <h2 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-teal-600 transition-colors line-clamp-2">
                         {post.title}
