@@ -782,7 +782,7 @@ function ROICalculator({ onAssessmentClick }) {
     const [adSpend, setAdSpend] = useState(3000);
 
     const bookingFee = 49;
-    const showFee = 199;
+    const showFee = 249;
 
     const appointmentCount = Math.round(leadCount * (leadToBooked / 100));
     const showUpCount = Math.round(appointmentCount * (bookedToShow / 100));
@@ -1090,7 +1090,7 @@ function ROICalculator({ onAssessmentClick }) {
 const FAQ_DATA = [
     {
         q: 'How does the performance-based model work?',
-        a: 'You only pay when we deliver results. There are two fees: $49 when a qualified patient books an in-person consultation, and $199 when that patient actually shows up at your clinic. If we don\'t generate bookings, you don\'t pay. It\'s that simple.',
+        a: 'You only pay when we deliver results. There are two fees: $49 when a qualified patient books an in-person consultation, and $249 when that patient actually shows up at your clinic. If we don\'t generate bookings, you don\'t pay. It\'s that simple.',
     },
     {
         q: 'Do I still need to pay for ad spend?',
@@ -1106,7 +1106,7 @@ const FAQ_DATA = [
     },
     {
         q: 'What if a patient books but doesn\'t show up?',
-        a: 'You only pay the $49 booking fee for that appointment. The $199 show fee is only charged when the patient physically arrives at your clinic. We also implement automated reminder sequences (SMS + email) to maximize show rates.',
+        a: 'You only pay the $49 booking fee for that appointment. The $249 show fee is only charged when the patient physically arrives at your clinic. We also implement automated reminder sequences (SMS + email) to maximize show rates.',
     },
     {
         q: 'Is there a long-term contract?',
@@ -1295,7 +1295,7 @@ export default function CashOffer() {
                                 position: 'absolute', top: 16, right: 16, background: BRAND.gold, color: BRAND.dark,
                                 padding: '4px 12px', borderRadius: 50, fontSize: 12, fontWeight: 700,
                             }}>STEP 02</div>
-                            <div style={{ fontSize: 48, fontWeight: 800, marginBottom: 8 }}>$199</div>
+                            <div style={{ fontSize: 48, fontWeight: 800, marginBottom: 8 }}>$249</div>
                             <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Per Attended Appointment</div>
                             <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginBottom: 16, lineHeight: 1.5 }}>Only paid when the patient actually shows up to your clinic.</p>
 
