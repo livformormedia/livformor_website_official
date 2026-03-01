@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, ArrowLeft, Clock, ArrowRight, Stethoscope, Shield, List, ChevronRight, Lightbulb } from 'lucide-react';
+import { Calendar, ArrowLeft, Clock, ArrowRight, Stethoscope, Shield, List, ChevronRight, ChevronDown, Lightbulb, HelpCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { getPostBySlug, getAllPosts } from '@/data/blogData';
@@ -15,8 +15,7 @@ function extractTOC(markdown) {
     if (match) {
       const level = match[1].length;
       const raw = match[2].replace(/\*\*/g, '').replace(/[`*_~]/g, '').trim();
-      // Remove "Mistake #X: " prefix for cleaner TOC
-      const text = raw.replace(/^Mistake\s*#\d+:\s*/i, '');
+      const text = raw;
       const id = raw.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       headings.push({ level, text, id });
     }
@@ -70,8 +69,8 @@ function TableOfContents({ headings, activeId }) {
             document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }}
           className={`block text-sm py-1.5 pl-3 border-l-2 transition-all duration-200 hover:text-teal-600 ${activeId === h.id
-              ? 'border-teal-500 text-teal-600 font-semibold bg-teal-50/50'
-              : 'border-gray-200 text-gray-500'
+            ? 'border-teal-500 text-teal-600 font-semibold bg-teal-50/50'
+            : 'border-gray-200 text-gray-500'
             }`}
         >
           {h.text}
@@ -99,11 +98,25 @@ const mdComponents = {
       </h2>
     );
   },
-  h3: ({ children, ...props }) => (
-    <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mt-8 mb-4" {...props}>
-      {children}
-    </h3>
-  ),
+  h3: ({ children, ...props }) => {
+    const text = typeof children === 'string' ? children : '';
+    const isKeyTakeaways = text === 'Key Takeaways';
+    if (isKeyTakeaways) {
+      return (
+        <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mt-10 mb-4 flex items-center gap-2" {...props}>
+          <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-teal-100">
+            <Lightbulb className="w-4 h-4 text-teal-600" />
+          </span>
+          {children}
+        </h3>
+      );
+    }
+    return (
+      <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mt-8 mb-4" {...props}>
+        {children}
+      </h3>
+    );
+  },
   p: ({ children, ...props }) => (
     <p className="text-gray-700 text-base sm:text-lg leading-relaxed mb-5" {...props}>
       {children}
@@ -165,7 +178,67 @@ const mdComponents = {
       {children}
     </a>
   ),
+  img: ({ src, alt, ...props }) => (
+    <figure className="my-8 sm:my-10">
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        className="w-full h-auto rounded-xl shadow-lg border border-gray-100"
+        {...props}
+      />
+      {alt && (
+        <figcaption className="mt-3 text-center text-sm text-gray-500 italic">
+          {alt}
+        </figcaption>
+      )}
+    </figure>
+  ),
 };
+
+/* ═══════ FAQ ACCORDION ═══════ */
+function FAQSection({ faq }) {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  if (!faq?.length) return null;
+
+  return (
+    <div className="mt-14">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center">
+          <HelpCircle className="w-5 h-5 text-teal-600" />
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          Frequently Asked Questions
+        </h2>
+      </div>
+      <div className="space-y-3">
+        {faq.map((item, i) => (
+          <div
+            key={i}
+            className="border border-gray-200 rounded-xl overflow-hidden hover:border-teal-200 transition-colors"
+          >
+            <button
+              onClick={() => setOpenIndex(openIndex === i ? null : i)}
+              className="w-full flex items-center justify-between px-5 sm:px-6 py-4 sm:py-5 text-left hover:bg-gray-50 transition-colors"
+            >
+              <span className="font-semibold text-gray-900 text-sm sm:text-base pr-4">{item.question}</span>
+              <ChevronDown
+                className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform duration-200 ${openIndex === i ? 'rotate-180 text-teal-500' : ''
+                  }`}
+              />
+            </button>
+            {openIndex === i && (
+              <div className="px-5 sm:px-6 pb-5 text-gray-700 text-sm sm:text-base leading-relaxed border-t border-gray-100 pt-4">
+                {item.answer}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /* ═══════ MAIN COMPONENT ═══════ */
 export default function BlogPost() {
@@ -225,9 +298,10 @@ export default function BlogPost() {
     setMeta('name', 'twitter:card', 'summary_large_image');
     if (post.featured_image) setMeta('property', 'og:image', post.featured_image);
 
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.textContent = JSON.stringify({
+    // Article JSON-LD
+    const articleScript = document.createElement('script');
+    articleScript.type = 'application/ld+json';
+    articleScript.textContent = JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'Article',
       headline: post.title,
@@ -237,8 +311,32 @@ export default function BlogPost() {
       publisher: { '@type': 'Organization', name: 'LivForMor Media' },
       ...(post.featured_image ? { image: post.featured_image } : {})
     });
-    document.head.appendChild(script);
-    return () => { try { document.head.removeChild(script); } catch (e) { } };
+    document.head.appendChild(articleScript);
+
+    // FAQPage JSON-LD
+    let faqScript;
+    if (post.faq?.length) {
+      faqScript = document.createElement('script');
+      faqScript.type = 'application/ld+json';
+      faqScript.textContent = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: post.faq.map(q => ({
+          '@type': 'Question',
+          name: q.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: q.answer
+          }
+        }))
+      });
+      document.head.appendChild(faqScript);
+    }
+
+    return () => {
+      try { document.head.removeChild(articleScript); } catch (e) { }
+      try { if (faqScript) document.head.removeChild(faqScript); } catch (e) { }
+    };
   }, [post]);
 
   const formatDate = (dateStr) => {
@@ -382,6 +480,9 @@ export default function BlogPost() {
             className="flex-1 max-w-4xl"
           >
             <ReactMarkdown components={mdComponents}>{post.content}</ReactMarkdown>
+
+            {/* ═══════ FAQ SECTION ═══════ */}
+            <FAQSection faq={post.faq} />
 
             {/* ═══════ AUTHOR BIO ═══════ */}
             <motion.div

@@ -775,21 +775,16 @@ function AssessmentModal({ isOpen, onClose }) {
 // ═══════════════════════════════════════════════════════════
 function ROICalculator({ onAssessmentClick }) {
     const [leadCount, setLeadCount] = useState(50);
-    const [leadToBooked, setLeadToBooked] = useState(60);
-    const [bookedToShow, setBookedToShow] = useState(70);
-    const [showToClose, setShowToClose] = useState(70);
+    const [leadToClose, setLeadToClose] = useState(35);
     const [ltv, setLtv] = useState(4500);
     const [adSpend, setAdSpend] = useState(3000);
 
-    const bookingFee = 49;
-    const showFee = 249;
+    const qualifiedInquiryFee = 99;
 
-    const appointmentCount = Math.round(leadCount * (leadToBooked / 100));
-    const showUpCount = Math.round(appointmentCount * (bookedToShow / 100));
-    const closedCount = Math.round(showUpCount * (showToClose / 100));
+    const closedCount = Math.round(leadCount * (leadToClose / 100));
 
     const revenue = closedCount * ltv;
-    const perfFee = (appointmentCount * bookingFee) + (showUpCount * showFee);
+    const perfFee = leadCount * qualifiedInquiryFee;
     const totalCost = perfFee + adSpend;
     const profit = revenue - totalCost;
     const roi = totalCost > 0 ? Math.round((profit / totalCost) * 100) : 0;
@@ -952,16 +947,12 @@ function ROICalculator({ onAssessmentClick }) {
                                 onFocus={e => e.target.style.borderColor = BRAND.teal}
                                 onBlur={e => e.target.style.borderColor = '#e5e7eb'} />
                             <span style={{ fontSize: 12, color: '#9ca3af', fontStyle: 'italic', display: 'block', marginTop: 4 }}>
-                                Total leads from your ad campaigns
+                                Qualified inquiries delivered per month
                             </span>
                         </div>
 
                         {/* Funnel Sliders */}
-                        <SliderField label="Lead → Booked Appointment" value={leadToBooked} onChange={setLeadToBooked}
-                            icon={<Target size={16} color={BRAND.teal} />} />
-                        <SliderField label="Booked → Shows Up" value={bookedToShow} onChange={setBookedToShow}
-                            icon={<Users size={16} color={BRAND.teal} />} />
-                        <SliderField label="Shows Up → Closes" value={showToClose} onChange={setShowToClose}
+                        <SliderField label="Inquiry → Closed Patient" value={leadToClose} onChange={setLeadToClose}
                             icon={<Award size={16} color={BRAND.teal} />} />
 
                         {/* LTV Slider */}
@@ -1032,9 +1023,7 @@ function ROICalculator({ onAssessmentClick }) {
                                 <BarChart3 size={18} color={BRAND.teal} /> Your Funnel Breakdown
                             </h3>
                             {[
-                                { label: 'Leads', value: leadCount, color: '#6366f1' },
-                                { label: 'Appointments Booked', value: appointmentCount, color: '#0ea5e9' },
-                                { label: 'Patients Show Up', value: showUpCount, color: '#f59e0b' },
+                                { label: 'Qualified Inquiries Delivered', value: leadCount, color: '#6366f1' },
                                 { label: 'Patients Closed', value: closedCount, color: '#22c55e' },
                             ].map((step, i) => (
                                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
@@ -1061,7 +1050,7 @@ function ROICalculator({ onAssessmentClick }) {
                         </div>
 
                         <p style={{ fontSize: 13, color: '#9ca3af', textAlign: 'center', marginTop: 10, fontStyle: 'italic' }}>
-                            *Performance fees: ${bookingFee}/booked + ${showFee}/show. Ad spend included in total cost.
+                            *Performance fee: $99 per qualified inquiry. Ad spend included in total cost.
                         </p>
                     </div>
                 </div>
@@ -1090,7 +1079,7 @@ function ROICalculator({ onAssessmentClick }) {
 const FAQ_DATA = [
     {
         q: 'How does the performance-based model work?',
-        a: 'You only pay when we deliver results. There are two fees: $49 when a qualified patient books an in-person consultation, and $249 when that patient actually shows up at your clinic. If we don\'t generate bookings, you don\'t pay. It\'s that simple.',
+        a: 'You only pay when we deliver results. One fee: $99 per qualified inquiry. A qualified inquiry is a real, pre-screened, cash-pay prospect who has never been your patient before and has consented to be contacted by your clinic. Before we launch a single ad, we sit down with you and agree on exactly what that means. If an inquiry doesn\'t meet the standard you set, you don\'t pay. No retainer. No monthly fee. No contract.',
     },
     {
         q: 'Do I still need to pay for ad spend?',
@@ -1106,7 +1095,7 @@ const FAQ_DATA = [
     },
     {
         q: 'What if a patient books but doesn\'t show up?',
-        a: 'You only pay the $49 booking fee for that appointment. The $249 show fee is only charged when the patient physically arrives at your clinic. We also implement automated reminder sequences (SMS + email) to maximize show rates.',
+        a: 'You only pay the $99 inquiry fee for each qualified prospect we deliver. The definition of "qualified" is agreed upon together before we start — so you\'re never paying for a lead that doesn\'t meet your standard. We also implement automated follow-up sequences (SMS + email) to maximize contact and conversion rates.',
     },
     {
         q: 'Is there a long-term contract?',
@@ -1280,10 +1269,10 @@ export default function CashOffer() {
                             <div style={{
                                 position: 'absolute', top: 16, right: 16, background: '#22c55e', color: 'white',
                                 padding: '4px 12px', borderRadius: 50, fontSize: 12, fontWeight: 700,
-                            }}>STEP 01</div>
-                            <div style={{ fontSize: 48, fontWeight: 800, color: BRAND.dark, marginBottom: 8 }}>$49</div>
-                            <div style={{ fontSize: 18, fontWeight: 700, color: '#374151', marginBottom: 8 }}>Per Booked Appointment</div>
-                            <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 16, lineHeight: 1.5 }}>Only paid when a patient books an in-person consultation with you.</p>
+                            }}>ONE FEE</div>
+                            <div style={{ fontSize: 48, fontWeight: 800, color: BRAND.dark, marginBottom: 8 }}>$99</div>
+                            <div style={{ fontSize: 18, fontWeight: 700, color: '#374151', marginBottom: 8 }}>Per Qualified Inquiry</div>
+                            <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 16, lineHeight: 1.5 }}>Only paid when a real, pre-screened, cash-pay prospect — who meets the standard you define — is delivered to your clinic.</p>
 
                         </div>
 
@@ -1294,10 +1283,10 @@ export default function CashOffer() {
                             <div style={{
                                 position: 'absolute', top: 16, right: 16, background: BRAND.gold, color: BRAND.dark,
                                 padding: '4px 12px', borderRadius: 50, fontSize: 12, fontWeight: 700,
-                            }}>STEP 02</div>
-                            <div style={{ fontSize: 48, fontWeight: 800, marginBottom: 8 }}>$249</div>
-                            <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Per Attended Appointment</div>
-                            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginBottom: 16, lineHeight: 1.5 }}>Only paid when the patient actually shows up to your clinic.</p>
+                            }}>YOUR STANDARD</div>
+                            <div style={{ fontSize: 48, fontWeight: 800, marginBottom: 8 }}>$0</div>
+                            <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>If It Doesn't Qualify</div>
+                            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', marginBottom: 16, lineHeight: 1.5 }}>We sit down before launch and agree on exactly what a qualified inquiry means for your clinic. If it doesn't meet that standard, you don't pay.</p>
 
                         </div>
                     </div>

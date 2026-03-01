@@ -47,12 +47,16 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AdBuilder from './pages/AdBuilder';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import CashOffer from './pages/CashOffer';
 import ExportHTML from './pages/ExportHTML';
 import Home from './pages/Home';
+import QualifiedLeadOffer from './pages/QualifiedLeadOffer';
 import Services from './pages/Services';
+import ShootPlan from './pages/ShootPlan';
+import Teleprompter from './pages/Teleprompter';
 import ThankYou from './pages/ThankYou';
 import ThankYouBasic from './pages/ThankYouBasic';
 import ThankYouBooked from './pages/ThankYouBooked';
@@ -60,12 +64,16 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "ad-builder": AdBuilder,
     "Blog": Blog,
     "BlogPost": BlogPost,
     "cash-offer": CashOffer,
     "ExportHTML": ExportHTML,
     "Home": Home,
+    "qualified-lead": QualifiedLeadOffer,
     "services": Services,
+    "shoot-plan": ShootPlan,
+    "teleprompter": Teleprompter,
     "ThankYou": ThankYou,
     "ThankYouBasic": ThankYouBasic,
     "ThankYouBooked": ThankYouBooked,
