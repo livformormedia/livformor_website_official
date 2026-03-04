@@ -98,50 +98,49 @@ export default function ThankYou() {
                 }
             `}</style>
 
-      {/* ─── SUCCESS ICON ─── */}
+      {/* ─── "YOU'RE NOT DONE YET" HOOK ─── */}
       <div style={{
         width: 80, height: 80, borderRadius: '50%',
-        background: `linear-gradient(135deg, ${BRAND.tealLight}, #14b8a6)`,
+        background: `linear-gradient(135deg, ${BRAND.gold}, ${BRAND.goldDark})`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        marginBottom: 24, boxShadow: `0 8px 32px rgba(45,212,191,0.3)`,
+        marginBottom: 24, boxShadow: `0 8px 32px rgba(197,184,150,0.3)`,
         animation: 'fadeSlideIn 0.6s ease-out',
       }}>
-        <CheckCircle size={40} color="white" />
+        <AlertTriangle size={38} color="white" />
       </div>
 
-      {/* ─── HEADLINE ─── */}
       <h1 style={{
         fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 900,
         color: 'white', textAlign: 'center', marginBottom: 12,
         animation: 'fadeSlideIn 0.6s ease-out 0.1s backwards',
       }}>
-        You're In — <span style={{
+        Wait — <span style={{
           background: `linear-gradient(90deg, ${BRAND.gold}, #e2d5b0, ${BRAND.gold})`,
           backgroundSize: '200% auto',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           animation: 'shimmer 3s linear infinite',
-        }}>Let's Build Your Growth Plan</span>
+        }}>You're Not Done Yet</span>
       </h1>
 
       <p style={{
-        fontSize: 18, color: 'rgba(255,255,255,0.8)', textAlign: 'center',
-        maxWidth: 540, marginBottom: 12, lineHeight: 1.6,
-        animation: 'fadeSlideIn 0.6s ease-out 0.2s backwards',
+        fontSize: 18, color: 'rgba(255,255,255,0.85)', textAlign: 'center',
+        maxWidth: 540, marginBottom: 8, lineHeight: 1.6,
+        animation: 'fadeSlideIn 0.6s ease-out 0.15s backwards',
         fontWeight: 600,
       }}>
-        We're putting together a custom acquisition blueprint for your clinic right now.
+        We have a surprise for you.
       </p>
       <p style={{
         fontSize: 16, color: 'rgba(255,255,255,0.55)', textAlign: 'center',
-        maxWidth: 500, marginBottom: 32, lineHeight: 1.6,
-        animation: 'fadeSlideIn 0.6s ease-out 0.25s backwards',
+        maxWidth: 520, marginBottom: 36, lineHeight: 1.7,
+        animation: 'fadeSlideIn 0.6s ease-out 0.2s backwards',
       }}>
-        Book your call below so we can walk through it together — your competitors, your market gaps, and exactly how to fill your schedule.
+        Our team is currently building an extensive, custom market research report — built from scratch, specifically for <strong style={{ color: 'white' }}>your clinic</strong>. Here's what's inside:
       </p>
 
-      {/* ═══ BLUEPRINT SURPRISE CARD ═══ */}
+      {/* ═══ MARKET RESEARCH PLAN CARD ═══ */}
       <div style={{
-        maxWidth: 580, width: '100%', marginBottom: 36,
+        maxWidth: 580, width: '100%', marginBottom: 32,
         animation: 'fadeSlideIn 0.6s ease-out 0.25s backwards',
       }}>
         <div style={{
@@ -151,7 +150,7 @@ export default function ThankYou() {
           overflow: 'hidden',
           boxShadow: `0 12px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)`,
         }}>
-          {/* Subtle corner accent */}
+          {/* Corner accent */}
           <div style={{
             position: 'absolute', top: -1, right: -1, width: 80, height: 80,
             background: `linear-gradient(225deg, ${BRAND.gold}20 0%, transparent 60%)`,
@@ -166,7 +165,7 @@ export default function ThankYou() {
             padding: '8px 18px', fontSize: 12, fontWeight: 800, color: BRAND.gold,
             marginBottom: 20, textTransform: 'uppercase', letterSpacing: 1.5,
           }}>
-            <Zap size={13} /> Building Now — Just for You
+            <Zap size={13} /> Your Custom Market Research
           </div>
 
           {/* Title */}
@@ -175,16 +174,15 @@ export default function ThankYou() {
             color: 'white', marginBottom: 8, lineHeight: 1.3,
           }}>
             <Sparkles size={20} style={{ display: 'inline', verticalAlign: 'middle', color: BRAND.gold, marginRight: 8 }} />
-            Your Custom Patient Acquisition Blueprint
+            Custom Clinic Growth Report
           </h2>
 
           <p style={{
             fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7,
             marginBottom: 24, maxWidth: 500,
           }}>
-            We're already analyzing your clinic and building a <strong style={{ color: 'white' }}>10+ page
-              custom growth report</strong> tailored specifically to your practice. It'll be ready to review
-            together on your call.
+            This isn't a generic PDF. We're building a <strong style={{ color: 'white' }}>deep, personalized analysis</strong> of your clinic,
+            your competitors, and your market — from scratch.
           </p>
 
           {/* Blueprint Items */}
@@ -195,7 +193,7 @@ export default function ThankYou() {
                 padding: '14px 16px',
                 background: 'rgba(255,255,255,0.03)',
                 border: '1px solid rgba(255,255,255,0.06)',
-                borderRadius: 14, transition: 'all 0.2s ease',
+                borderRadius: 14,
               }}>
                 <div style={{
                   width: 40, height: 40, borderRadius: 12, flexShrink: 0,
@@ -228,11 +226,11 @@ export default function ThankYou() {
                 display: 'flex', justifyContent: 'space-between', marginBottom: 8,
               }}>
                 <span style={{ fontSize: 13, fontWeight: 700, color: BRAND.tealLight }}>
-                  Building your blueprint
+                  Building your report
                   <span style={{ animation: 'dotPulse 1.5s ease-in-out infinite' }}>...</span>
                 </span>
                 <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
-                  Ready by call time
+                  Ready in a few hours
                 </span>
               </div>
               <div style={{
@@ -250,26 +248,92 @@ export default function ThankYou() {
         </div>
       </div>
 
-      {/* ─── URGENCY ALERT ─── */}
+      {/* ═══ IMPORTANT: HOW YOU'LL RECEIVE IT ═══ */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 10,
-        background: 'rgba(245,158,11,0.1)',
-        border: '1px solid rgba(245,158,11,0.3)', borderRadius: 14,
-        padding: '12px 20px', marginBottom: 32, maxWidth: 520, width: '100%',
+        maxWidth: 560, width: '100%', marginBottom: 32,
         animation: 'fadeSlideIn 0.6s ease-out 0.3s backwards',
       }}>
-        <AlertTriangle size={18} color="#f59e0b" style={{ flexShrink: 0 }} />
-        <span style={{ fontSize: 14, fontWeight: 600, color: '#fbbf24' }}>
-          Spots are limited — we only onboard 3 clinics per month.
-        </span>
+        <div style={{
+          background: 'rgba(245,158,11,0.08)',
+          border: '2px solid rgba(245,158,11,0.25)',
+          borderRadius: 20, padding: '28px 24px',
+        }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16,
+          }}>
+            <AlertTriangle size={20} color="#f59e0b" />
+            <span style={{ fontSize: 16, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1 }}>
+              Important — Read This
+            </span>
+          </div>
+          <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.8)', lineHeight: 1.8 }}>
+            <p style={{ marginBottom: 14 }}>
+              Your custom report will be ready in the <strong style={{ color: 'white' }}>next few hours</strong>.
+              Here's how you'll get it:
+            </p>
+            <div style={{ paddingLeft: 4, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[
+                { num: '1', text: "We\u2019ll send you an SMS when it\u2019s ready" },
+                { num: '2', text: 'The SMS will tell you to check your email' },
+                { num: '3', text: <><strong style={{ color: 'white' }}>Reply to the email</strong> to confirm you received it — that's the only way we know you got it</> },
+              ].map((step) => (
+                <div key={step.num} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                    background: `linear-gradient(135deg, ${BRAND.gold}30, ${BRAND.goldDark}30)`,
+                    border: `1px solid ${BRAND.gold}40`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 13, fontWeight: 800, color: BRAND.gold,
+                  }}>{step.num}</div>
+                  <span style={{ paddingTop: 3 }}>{step.text}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* ─── BONUS CARD + COUNTDOWN ─── */}
+      {/* ═══ MUTUAL COMMITMENT ═══ */}
+      <div style={{
+        maxWidth: 560, width: '100%', marginBottom: 36,
+        animation: 'fadeSlideIn 0.6s ease-out 0.35s backwards',
+      }}>
+        <div style={{
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 20, padding: '28px 24px',
+        }}>
+          <h3 style={{ fontSize: 20, fontWeight: 800, color: 'white', marginBottom: 14 }}>
+            🤝 This Is a Two-Way Street
+          </h3>
+          <p style={{
+            fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.8, marginBottom: 16,
+          }}>
+            We're putting real time and effort into building this report for you — competitor data, market gaps,
+            custom recommendations. All of it specific to your clinic.
+          </p>
+          <p style={{
+            fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.8, marginBottom: 16,
+          }}>
+            In return, we ask one thing: <strong style={{ color: 'white' }}>go through the report before the call</strong>.
+            Not because we're better than anyone — but because this only works if we're both prepared.
+            If we're going to spend time on your market together, you should come knowing what's in there.
+          </p>
+          <p style={{
+            fontSize: 15, color: 'rgba(255,255,255,0.55)', lineHeight: 1.8, fontStyle: 'italic',
+          }}>
+            If you show up without reviewing it, we won't be able to give you the full value of the call.
+            It's not about gatekeeping — it's about making sure <em>your</em> time is well spent too.
+          </p>
+        </div>
+      </div>
+
+      {/* ─── BONUS: 10 SCRIPTS ─── */}
       <div style={{
         background: 'rgba(255,255,255,0.06)', border: `2px solid ${BRAND.gold}40`,
         borderRadius: 24, padding: '28px 32px', maxWidth: 520, width: '100%',
         textAlign: 'center', marginBottom: 36,
-        animation: 'fadeSlideIn 0.6s ease-out 0.35s backwards',
+        animation: 'fadeSlideIn 0.6s ease-out 0.4s backwards',
       }}>
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -278,15 +342,16 @@ export default function ThankYou() {
           padding: '8px 18px', fontSize: 13, fontWeight: 700, color: BRAND.gold,
           marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1,
         }}>
-          <Gift size={14} /> Limited Time Bonus
+          <Gift size={14} /> Bonus
         </div>
 
         <h2 style={{ fontSize: 22, fontWeight: 800, color: 'white', marginBottom: 8 }}>
           <Flame size={20} style={{ display: 'inline', verticalAlign: 'middle', color: '#f59e0b', marginRight: 6 }} />
-          10 FREE Warm-Up Video Scripts
+          10 FREE Organic Video Scripts
         </h2>
         <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', marginBottom: 20 }}>
-          Book in the next hour to get scripts that warm up leads <em>before</em> they see your ads.
+          Book within the next hour <strong style={{ color: 'rgba(255,255,255,0.85)' }}>and</strong> actually show up to the call prepared —
+          and we'll send you 10 organic video scripts to warm up leads on your social media. On top of everything else.
         </p>
 
         {/* Countdown */}
@@ -313,14 +378,14 @@ export default function ThankYou() {
       {/* ─── EMBEDDED CALENDAR ─── */}
       <div style={{
         maxWidth: 660, width: '100%', marginBottom: 40,
-        animation: 'fadeSlideIn 0.6s ease-out 0.4s backwards',
+        animation: 'fadeSlideIn 0.6s ease-out 0.45s backwards',
       }}>
         <h3 style={{
           fontSize: 20, fontWeight: 800, color: 'white', textAlign: 'center',
           marginBottom: 20,
         }}>
-          <Sparkles size={18} style={{ display: 'inline', verticalAlign: 'middle', color: BRAND.gold, marginRight: 8 }} />
-          Book Your Patient Generation Call Below
+          <Calendar size={18} style={{ display: 'inline', verticalAlign: 'middle', color: BRAND.gold, marginRight: 8 }} />
+          Book Your Call Below
         </h3>
 
         <div style={{
@@ -342,36 +407,9 @@ export default function ThankYou() {
         </div>
       </div>
 
-      {/* ─── WHAT TO EXPECT ─── */}
-      <div style={{
-        maxWidth: 520, width: '100%',
-        animation: 'fadeSlideIn 0.6s ease-out 0.5s backwards',
-      }}>
-        <h3 style={{
-          fontSize: 18, fontWeight: 700, color: 'white', marginBottom: 20,
-          textAlign: 'center',
-        }}>
-          What Happens on the Call
-        </h3>
-        {[
-          'We walk through your Custom Patient Acquisition Blueprint together',
-          'You see exactly where your clinic stands vs. competitors',
-          'You get a step-by-step plan for 10-15 new patients/month',
-          'We discuss if we\'re the right fit — zero pressure',
-        ].map((item, i) => (
-          <div key={i} style={{
-            display: 'flex', alignItems: 'flex-start', gap: 12,
-            marginBottom: 14, fontSize: 15, color: 'rgba(255,255,255,0.75)',
-          }}>
-            <CheckCircle size={18} color={BRAND.tealLight} style={{ flexShrink: 0, marginTop: 2 }} />
-            {item}
-          </div>
-        ))}
-      </div>
-
       {/* Footer */}
       <p style={{
-        marginTop: 48, fontSize: 13, color: 'rgba(255,255,255,0.3)',
+        marginTop: 16, fontSize: 13, color: 'rgba(255,255,255,0.3)',
         textAlign: 'center', maxWidth: 400,
       }}>
         <Clock size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
