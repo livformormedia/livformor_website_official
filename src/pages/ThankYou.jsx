@@ -14,10 +14,10 @@ const BRAND = {
   white: '#ffffff',
 };
 
-const BOOKING_URL = 'https://api.leadconnectorhq.com/widget/bookings/livformor-intro-meeting';
+const GHL_IFRAME_SRC = 'https://api.leadconnectorhq.com/widget/booking/h80MYRBTDN9NXYcqvZ9E';
 
 export default function ThankYou() {
-  const [timeLeft, setTimeLeft] = useState({ hours: 47, minutes: 59, seconds: 59 });
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 59, seconds: 59 });
 
   // SEO & Tracking
   useEffect(() => {
@@ -25,17 +25,25 @@ export default function ThankYou() {
     if (typeof window !== 'undefined' && window.fbq) {
       window.fbq('track', 'ViewContent', { content_name: 'Thank You - Qualified' });
     }
+    // Load GHL form_embed.js for calendar widget
+    if (!document.querySelector('script[src="https://link.msgsndr.com/js/form_embed.js"]')) {
+      const s = document.createElement('script');
+      s.src = 'https://link.msgsndr.com/js/form_embed.js';
+      s.type = 'text/javascript';
+      s.async = true;
+      document.body.appendChild(s);
+    }
   }, []);
 
-  // 48hr countdown timer
+  // 1hr countdown timer
   useEffect(() => {
-    const endTime = localStorage.getItem('livformor_bonus_end');
+    const endTime = localStorage.getItem('livformor_qualified_bonus_1hr_end');
     let target;
     if (endTime) {
       target = parseInt(endTime, 10);
     } else {
-      target = Date.now() + 48 * 60 * 60 * 1000;
-      localStorage.setItem('livformor_bonus_end', target.toString());
+      target = Date.now() + 1 * 60 * 60 * 1000;
+      localStorage.setItem('livformor_qualified_bonus_1hr_end', target.toString());
     }
     const tick = () => {
       const diff = Math.max(0, target - Date.now());
@@ -107,20 +115,28 @@ export default function ThankYou() {
         color: 'white', textAlign: 'center', marginBottom: 12,
         animation: 'fadeSlideIn 0.6s ease-out 0.1s backwards',
       }}>
-        You're <span style={{
+        We Found Something About <span style={{
           background: `linear-gradient(90deg, ${BRAND.gold}, #e2d5b0, ${BRAND.gold})`,
           backgroundSize: '200% auto',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           animation: 'shimmer 3s linear infinite',
-        }}>Pre-Qualified!</span>
+        }}>Your Market</span>
       </h1>
 
       <p style={{
-        fontSize: 18, color: 'rgba(255,255,255,0.7)', textAlign: 'center',
-        maxWidth: 540, marginBottom: 32, lineHeight: 1.6,
+        fontSize: 18, color: 'rgba(255,255,255,0.8)', textAlign: 'center',
+        maxWidth: 540, marginBottom: 12, lineHeight: 1.6,
         animation: 'fadeSlideIn 0.6s ease-out 0.2s backwards',
+        fontWeight: 600,
       }}>
-        Book your Patient Generation Call below to lock in your spot.
+        Your competitors are already running patient acquisition campaigns in your area.
+      </p>
+      <p style={{
+        fontSize: 16, color: 'rgba(255,255,255,0.55)', textAlign: 'center',
+        maxWidth: 500, marginBottom: 32, lineHeight: 1.6,
+        animation: 'fadeSlideIn 0.6s ease-out 0.25s backwards',
+      }}>
+        We've started pulling their data. Book your call now so we can walk you through what they're doing — and how to beat them.
       </p>
 
       {/* ═══ BLUEPRINT SURPRISE CARD ═══ */}
@@ -270,7 +286,7 @@ export default function ThankYou() {
           10 FREE Warm-Up Video Scripts
         </h2>
         <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', marginBottom: 20 }}>
-          Book within 48 hours to get scripts that warm up leads <em>before</em> they see your ads.
+          Book in the next hour to get scripts that warm up leads <em>before</em> they see your ads.
         </p>
 
         {/* Countdown */}
@@ -294,46 +310,36 @@ export default function ThankYou() {
         </div>
       </div>
 
-      {/* ─── BOOK CALL CTA ─── */}
+      {/* ─── EMBEDDED CALENDAR ─── */}
       <div style={{
-        maxWidth: 580, width: '100%', marginBottom: 40,
+        maxWidth: 660, width: '100%', marginBottom: 40,
         animation: 'fadeSlideIn 0.6s ease-out 0.4s backwards',
-        textAlign: 'center',
       }}>
-        <a
-          href={BOOKING_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-            padding: '20px 48px',
-            background: `linear-gradient(135deg, ${BRAND.gold}, ${BRAND.goldDark})`,
-            color: BRAND.dark, fontWeight: 800, fontSize: 18,
-            border: 'none', borderRadius: 16,
-            textDecoration: 'none', cursor: 'pointer',
-            boxShadow: `0 8px 32px rgba(197,184,150,0.35)`,
-            transition: 'all 0.3s ease',
-            animation: 'pulseGlow 3s ease-in-out infinite',
-            width: '100%', maxWidth: 440,
-          }}
-          onMouseOver={e => {
-            e.currentTarget.style.transform = 'translateY(-3px)';
-            e.currentTarget.style.boxShadow = '0 12px 40px rgba(197,184,150,0.5)';
-          }}
-          onMouseOut={e => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 8px 32px rgba(197,184,150,0.35)';
-          }}
-        >
-          <Calendar size={22} />
-          Book Your Call Now
-          <ArrowRight size={20} />
-        </a>
-        <p style={{
-          fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 12,
+        <h3 style={{
+          fontSize: 20, fontWeight: 800, color: 'white', textAlign: 'center',
+          marginBottom: 20,
         }}>
-          Takes 30 seconds — pick a time that works for you
-        </p>
+          <Sparkles size={18} style={{ display: 'inline', verticalAlign: 'middle', color: BRAND.gold, marginRight: 8 }} />
+          Book Your Patient Generation Call Below
+        </h3>
+
+        <div style={{
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 20, overflow: 'hidden',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+        }}>
+          <iframe
+            src={GHL_IFRAME_SRC}
+            style={{
+              width: '100%', minHeight: 700, border: 'none',
+              overflow: 'hidden',
+            }}
+            scrolling="no"
+            id="h80MYRBTDN9NXYcqvZ9E_embed"
+            title="Book your strategy call"
+          />
+        </div>
       </div>
 
       {/* ─── WHAT TO EXPECT ─── */}
