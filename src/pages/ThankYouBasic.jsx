@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
-    Calendar, Clock, Gift, Sparkles, Flame, Star, AlertTriangle, CheckCircle,
+    Clock, CheckCircle, Star, Sparkles,
     Search, BarChart3, MapPin, FileText, Zap, ArrowRight
 } from 'lucide-react';
 
@@ -12,50 +12,13 @@ const BRAND = {
     goldDark: '#b5a882',
 };
 
-const GHL_IFRAME_SRC = 'https://api.leadconnectorhq.com/widget/booking/uFC5nICUZYgMU2WYHdcm';
-
 export default function ThankYouBasic() {
-    const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 59, seconds: 59 });
-
     useEffect(() => {
         document.title = 'Thank You! | LivForMor Media';
         if (typeof window !== 'undefined' && window.fbq) {
             window.fbq('track', 'ViewContent', { content_name: 'Thank You - Basic' });
         }
-        // Load GHL form_embed.js for calendar widget
-        if (!document.querySelector('script[src="https://link.msgsndr.com/js/form_embed.js"]')) {
-            const s = document.createElement('script');
-            s.src = 'https://link.msgsndr.com/js/form_embed.js';
-            s.type = 'text/javascript';
-            s.async = true;
-            document.body.appendChild(s);
-        }
     }, []);
-
-    // 1hr countdown timer
-    useEffect(() => {
-        const endTime = localStorage.getItem('livformor_basic_bonus_1hr_end');
-        let target;
-        if (endTime) {
-            target = parseInt(endTime, 10);
-        } else {
-            target = Date.now() + 1 * 60 * 60 * 1000;
-            localStorage.setItem('livformor_basic_bonus_1hr_end', target.toString());
-        }
-        const tick = () => {
-            const diff = Math.max(0, target - Date.now());
-            setTimeLeft({
-                hours: Math.floor(diff / 3600000),
-                minutes: Math.floor((diff % 3600000) / 60000),
-                seconds: Math.floor((diff % 60000) / 1000),
-            });
-        };
-        tick();
-        const iv = setInterval(tick, 1000);
-        return () => clearInterval(iv);
-    }, []);
-
-    const pad = (n) => String(n).padStart(2, '0');
 
     const blueprintItems = [
         { icon: <Search size={20} />, title: 'Clinic Strengths & Weaknesses', desc: 'Deep audit of your current marketing, website, and patient journey' },
@@ -238,123 +201,68 @@ export default function ThankYouBasic() {
             </div>
 
             {/* ─── URGENCY ALERT ─── */}
+            {/* ─── WHAT HAPPENS NEXT ─── */}
             <div style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                background: 'rgba(245,158,11,0.1)',
-                border: '1px solid rgba(245,158,11,0.3)', borderRadius: 14,
-                padding: '12px 20px', marginBottom: 32, maxWidth: 520, width: '100%',
-                animation: 'fadeSlideIn 0.6s ease-out 0.3s backwards',
-            }}>
-                <AlertTriangle size={18} color="#f59e0b" style={{ flexShrink: 0 }} />
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#fbbf24' }}>
-                    Spots fill up fast — book now while availability lasts.
-                </span>
-            </div>
-
-            {/* ─── BONUS CARD + COUNTDOWN ─── */}
-            <div style={{
-                background: 'rgba(255,255,255,0.06)', border: `2px solid ${BRAND.gold}40`,
-                borderRadius: 24, padding: '28px 32px', maxWidth: 520, width: '100%',
+                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 24, padding: '32px 28px', maxWidth: 520, width: '100%',
                 textAlign: 'center', marginBottom: 36,
                 animation: 'fadeSlideIn 0.6s ease-out 0.35s backwards',
             }}>
-                <div style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 8,
-                    background: `linear-gradient(135deg, ${BRAND.gold}20, ${BRAND.goldDark}20)`,
-                    border: `1px solid ${BRAND.gold}30`, borderRadius: 50,
-                    padding: '8px 18px', fontSize: 13, fontWeight: 700, color: BRAND.gold,
-                    marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1,
-                }}>
-                    <Gift size={14} /> Limited Time Bonus
-                </div>
-
-                <h2 style={{ fontSize: 22, fontWeight: 800, color: 'white', marginBottom: 8 }}>
-                    <Flame size={20} style={{ display: 'inline', verticalAlign: 'middle', color: '#f59e0b', marginRight: 6 }} />
-                    10 FREE Organic Video Scripts On Top
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: 'white', marginBottom: 12 }}>
+                    What Happens Next?
                 </h2>
-                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', marginBottom: 20 }}>
-                    Book in the next hour and you get 10 organic video scripts to warm up leads on your social media,
-                    on top of everything else.
+                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, marginBottom: 24 }}>
+                    Our team is reviewing your information right now. If we see an opportunity to help your clinic grow,
+                    we'll reach out within <strong style={{ color: BRAND.gold }}>24 hours</strong> with a personalized recommendation.
                 </p>
 
-                {/* Countdown */}
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
-                    {[
-                        { val: pad(timeLeft.hours), label: 'Hours' },
-                        { val: pad(timeLeft.minutes), label: 'Minutes' },
-                        { val: pad(timeLeft.seconds), label: 'Seconds' },
-                    ].map((t, i) => (
-                        <div key={i} style={{ textAlign: 'center' }}>
-                            <div style={{
-                                fontSize: 36, fontWeight: 900, color: BRAND.gold,
-                                fontFeatureSettings: '"tnum"', fontVariantNumeric: 'tabular-nums',
-                                lineHeight: 1.2,
-                            }}>{t.val}</div>
-                            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: 1 }}>
-                                {t.label}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* ─── EMBEDDED CALENDAR ─── */}
-            <div style={{
-                maxWidth: 660, width: '100%', marginBottom: 40,
-                animation: 'fadeSlideIn 0.6s ease-out 0.4s backwards',
-            }}>
-                <h3 style={{
-                    fontSize: 20, fontWeight: 800, color: 'white', textAlign: 'center',
-                    marginBottom: 20,
-                }}>
-                    <Sparkles size={18} style={{ display: 'inline', verticalAlign: 'middle', color: BRAND.gold, marginRight: 8 }} />
-                    Book Your Patient Generation Call Below
-                </h3>
-
-                <div style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: 20, overflow: 'hidden',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-                }}>
-                    <iframe
-                        src={GHL_IFRAME_SRC}
-                        style={{
-                            width: '100%', minHeight: 700, border: 'none',
-                            overflow: 'hidden',
-                        }}
-                        scrolling="no"
-                        id="uFC5nICUZYgMU2WYHdcm_embed"
-                        title="Book your call"
-                    />
-                </div>
-            </div>
-
-            {/* ─── WHAT TO EXPECT ─── */}
-            <div style={{
-                maxWidth: 520, width: '100%',
-                animation: 'fadeSlideIn 0.6s ease-out 0.5s backwards',
-            }}>
-                <h3 style={{
-                    fontSize: 18, fontWeight: 700, color: 'white', marginBottom: 20,
-                    textAlign: 'center',
-                }}>
-                    What Happens on the Call
-                </h3>
                 {[
-                    'We walk through your Custom Clinic Growth Report together',
-                    'You get a clear picture of where your clinic stands',
-                    'We discuss the best growth path — tailored to you',
-                    'You walk away with actionable insights either way',
+                    'We review your clinic profile and market data',
+                    'If there\'s a fit, we reach out with a custom plan',
+                    'No pressure — just honest insights about your growth potential',
                 ].map((item, i) => (
                     <div key={i} style={{
                         display: 'flex', alignItems: 'flex-start', gap: 12,
-                        marginBottom: 14, fontSize: 15, color: 'rgba(255,255,255,0.75)',
+                        marginBottom: 12, fontSize: 15, color: 'rgba(255,255,255,0.75)',
+                        textAlign: 'left',
                     }}>
                         <CheckCircle size={18} color={BRAND.tealLight} style={{ flexShrink: 0, marginTop: 2 }} />
                         {item}
                     </div>
                 ))}
+            </div>
+
+            {/* ─── FOLLOW US ─── */}
+            <div style={{
+                maxWidth: 520, width: '100%',
+                textAlign: 'center',
+                animation: 'fadeSlideIn 0.6s ease-out 0.45s backwards',
+            }}>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: 'white', marginBottom: 16 }}>
+                    In the Meantime, Follow Us for Free Tips
+                </h3>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+                    <a href="https://www.instagram.com/livformormedia" target="_blank" rel="noopener noreferrer"
+                        style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 8,
+                            background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+                            borderRadius: 50, padding: '10px 22px', fontSize: 14, fontWeight: 700,
+                            color: 'white', textDecoration: 'none',
+                            transition: 'all 0.2s',
+                        }}>
+                        📸 Instagram
+                    </a>
+                    <a href="https://www.youtube.com/@LivForMorMedia" target="_blank" rel="noopener noreferrer"
+                        style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 8,
+                            background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+                            borderRadius: 50, padding: '10px 22px', fontSize: 14, fontWeight: 700,
+                            color: 'white', textDecoration: 'none',
+                            transition: 'all 0.2s',
+                        }}>
+                        ▶️ YouTube
+                    </a>
+                </div>
             </div>
 
             {/* Footer */}
@@ -363,7 +271,7 @@ export default function ThankYouBasic() {
                 textAlign: 'center', maxWidth: 400,
             }}>
                 <Clock size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
-                Calls are 15-20 minutes. No commitment required.
+                We only partner with clinics where we're confident we can deliver results.
             </p>
         </div>
     );
