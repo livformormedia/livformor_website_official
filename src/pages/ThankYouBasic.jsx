@@ -12,11 +12,21 @@ const BRAND = {
     goldDark: '#b5a882',
 };
 
+const GHL_IFRAME_SRC = 'https://api.leadconnectorhq.com/widget/booking/uFC5nICUZYgMU2WYHdcm';
+
 export default function ThankYouBasic() {
     useEffect(() => {
         document.title = 'Thank You! | LivForMor Media';
         if (typeof window !== 'undefined' && window.fbq) {
             window.fbq('track', 'ViewContent', { content_name: 'Thank You - Basic' });
+        }
+        // Load GHL form_embed.js for calendar widget
+        if (!document.querySelector('script[src="https://link.msgsndr.com/js/form_embed.js"]')) {
+            const s = document.createElement('script');
+            s.src = 'https://link.msgsndr.com/js/form_embed.js';
+            s.type = 'text/javascript';
+            s.async = true;
+            document.body.appendChild(s);
         }
     }, []);
 
@@ -200,36 +210,36 @@ export default function ThankYouBasic() {
                 </div>
             </div>
 
-            {/* ─── URGENCY ALERT ─── */}
-            {/* ─── WHAT HAPPENS NEXT ─── */}
+            {/* ─── EMBEDDED CALENDAR ─── */}
             <div style={{
-                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 24, padding: '32px 28px', maxWidth: 520, width: '100%',
-                textAlign: 'center', marginBottom: 36,
+                maxWidth: 660, width: '100%', marginBottom: 40,
                 animation: 'fadeSlideIn 0.6s ease-out 0.35s backwards',
             }}>
-                <h2 style={{ fontSize: 22, fontWeight: 800, color: 'white', marginBottom: 12 }}>
-                    What Happens Next?
-                </h2>
-                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.65)', lineHeight: 1.7, marginBottom: 24 }}>
-                    Our team is reviewing your information right now. If we see an opportunity to help your clinic grow,
-                    we'll reach out within <strong style={{ color: BRAND.gold }}>24 hours</strong> with a personalized recommendation.
-                </p>
+                <h3 style={{
+                    fontSize: 20, fontWeight: 800, color: 'white', textAlign: 'center',
+                    marginBottom: 20,
+                }}>
+                    <Sparkles size={18} style={{ display: 'inline', verticalAlign: 'middle', color: BRAND.gold, marginRight: 8 }} />
+                    Book Your Intro Call Below
+                </h3>
 
-                {[
-                    'We review your clinic profile and market data',
-                    'If there\'s a fit, we reach out with a custom plan',
-                    'No pressure — just honest insights about your growth potential',
-                ].map((item, i) => (
-                    <div key={i} style={{
-                        display: 'flex', alignItems: 'flex-start', gap: 12,
-                        marginBottom: 12, fontSize: 15, color: 'rgba(255,255,255,0.75)',
-                        textAlign: 'left',
-                    }}>
-                        <CheckCircle size={18} color={BRAND.tealLight} style={{ flexShrink: 0, marginTop: 2 }} />
-                        {item}
-                    </div>
-                ))}
+                <div style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 20, overflow: 'hidden',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                }}>
+                    <iframe
+                        src={GHL_IFRAME_SRC}
+                        style={{
+                            width: '100%', minHeight: 700, border: 'none',
+                            overflow: 'hidden',
+                        }}
+                        scrolling="no"
+                        id="uFC5nICUZYgMU2WYHdcm_embed"
+                        title="Book your call"
+                    />
+                </div>
             </div>
 
             {/* ─── FOLLOW US ─── */}
@@ -239,7 +249,7 @@ export default function ThankYouBasic() {
                 animation: 'fadeSlideIn 0.6s ease-out 0.45s backwards',
             }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, color: 'white', marginBottom: 16 }}>
-                    In the Meantime, Follow Us for Free Tips
+                    Follow Us for Free Clinic Growth Tips
                 </h3>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
                     <a href="https://www.instagram.com/livformormedia" target="_blank" rel="noopener noreferrer"

@@ -115,12 +115,12 @@ export default function ThankYou() {
         color: 'white', textAlign: 'center', marginBottom: 12,
         animation: 'fadeSlideIn 0.6s ease-out 0.1s backwards',
       }}>
-        We Found Something About <span style={{
+        You're In — <span style={{
           background: `linear-gradient(90deg, ${BRAND.gold}, #e2d5b0, ${BRAND.gold})`,
           backgroundSize: '200% auto',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           animation: 'shimmer 3s linear infinite',
-        }}>Your Market</span>
+        }}>Let's Build Your Growth Plan</span>
       </h1>
 
       <p style={{
@@ -129,14 +129,14 @@ export default function ThankYou() {
         animation: 'fadeSlideIn 0.6s ease-out 0.2s backwards',
         fontWeight: 600,
       }}>
-        Your competitors are already running patient acquisition campaigns in your area.
+        We're putting together a custom acquisition blueprint for your clinic right now.
       </p>
       <p style={{
         fontSize: 16, color: 'rgba(255,255,255,0.55)', textAlign: 'center',
         maxWidth: 500, marginBottom: 32, lineHeight: 1.6,
         animation: 'fadeSlideIn 0.6s ease-out 0.25s backwards',
       }}>
-        We've started pulling their data. Book your call now so we can walk you through what they're doing — and how to beat them.
+        Book your call below so we can walk through it together — your competitors, your market gaps, and exactly how to fill your schedule.
       </p>
 
       {/* ═══ BLUEPRINT SURPRISE CARD ═══ */}
