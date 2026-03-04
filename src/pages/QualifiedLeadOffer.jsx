@@ -555,17 +555,14 @@ function AssessmentModal({ isOpen, onClose }) {
             }
         }
 
-        // 4. Trigger Native Research Engine (Awaited)
-        // We await this so the browser doesn't kill the connection before the Edge Function finishes.
-        try {
-            await fetch('https://yrfobzuiqcuhylstiukn.supabase.co/functions/v1/generate-research-report', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-        } catch (err) {
-            console.error("Research trigger error", err);
-        }
+        // 4. Trigger Native Research Engine (fire-and-forget)
+        // Don't await — let it run in the background so the user redirects immediately.
+        fetch('https://yrfobzuiqcuhylstiukn.supabase.co/functions/v1/generate-research-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            keepalive: true,  // ensures the request completes even after navigation
+        }).catch(err => console.error("Research trigger error", err));
 
         setIsSubmitting(false);
         onClose();
@@ -1618,7 +1615,7 @@ export default function QualifiedLeadOffer() {
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
                     }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 16 }}>
-                            <ShieldCheck size={18} /> Get Your Custom KAP Patient Acquisition Plan
+                            <ShieldCheck size={18} /> Get Your Growth Plan
                         </div>
                         <span style={{ fontSize: 12, fontWeight: 600, opacity: 0.8 }}>No Cost, No Obligation</span>
                     </button>
