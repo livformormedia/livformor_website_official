@@ -1,14 +1,17 @@
 import React, { useEffect } from 'react';
-import { CheckCircle, Play, ArrowRight, Clock, Sparkles, AlertTriangle } from 'lucide-react';
+import {
+    CheckCircle, Play, ArrowRight, Clock, Sparkles, AlertTriangle,
+    FileText, Instagram, ExternalLink
+} from 'lucide-react';
 
 const BRAND = {
-    dark: '#0b2b2e',
-    teal: '#2dd4bf',
+    dark: '#0d3b40',
+    teal: '#0f766e',
+    tealLight: '#2dd4bf',
     gold: '#c5b896',
-    goldDark: '#a89970',
+    goldDark: '#b5a882',
 };
 
-// YouTube videos
 const YOUTUBE_VIDEOS = [
     {
         title: "How to 3x Your Clinic's Lead Quality in Less Than 10 Minutes",
@@ -30,6 +33,8 @@ const YOUTUBE_VIDEOS = [
     },
 ];
 
+const INSTAGRAM_URL = 'https://www.instagram.com/livformormedia';
+
 export default function ThankYouBooked() {
     useEffect(() => {
         document.title = "You're Booked! | LivForMor Media";
@@ -37,12 +42,8 @@ export default function ThankYouBooked() {
         const params = new URLSearchParams(window.location.search);
         const isQualified = params.get('q') === '1';
 
-        // Only fire Schedule event for qualified leads
         if (isQualified) {
-            // Client-side FB pixel
-            // @ts-ignore
             if (typeof window !== 'undefined' && window.fbq) {
-                // @ts-ignore
                 window.fbq('track', 'Schedule', {
                     content_name: 'Strategy Call Booked',
                     content_category: 'Qualified',
@@ -50,8 +51,6 @@ export default function ThankYouBooked() {
                     currency: 'USD',
                 });
             }
-
-            // Server-side CAPI
             try {
                 const getCookie = (name) => {
                     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
@@ -81,30 +80,30 @@ export default function ThankYouBooked() {
     return (
         <div style={{
             minHeight: '100vh',
-            background: `linear-gradient(135deg, ${BRAND.dark} 0%, #0a3a3f 30%, ${BRAND.dark} 100%)`,
+            background: `linear-gradient(170deg, ${BRAND.dark} 0%, #0a3a3f 40%, ${BRAND.dark} 100%)`,
             fontFamily: "'Nunito Sans', sans-serif",
             display: 'flex', flexDirection: 'column', alignItems: 'center',
             padding: '40px 20px 60px',
         }}>
             <style>{`
-        @keyframes pulseGlow {
-          0%, 100% { box-shadow: 0 0 20px rgba(45,212,191,0.3); }
-          50% { box-shadow: 0 0 40px rgba(45,212,191,0.6), 0 0 60px rgba(45,212,191,0.2); }
-        }
-        @keyframes fadeSlideIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
-        }
-      `}</style>
+                @keyframes pulseGlow {
+                    0%, 100% { box-shadow: 0 0 20px rgba(45,212,191,0.3); }
+                    50% { box-shadow: 0 0 40px rgba(45,212,191,0.6), 0 0 60px rgba(45,212,191,0.2); }
+                }
+                @keyframes fadeSlideIn {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes shimmer {
+                    0% { background-position: -200% center; }
+                    100% { background-position: 200% center; }
+                }
+            `}</style>
 
             {/* ─── SUCCESS ICON ─── */}
             <div style={{
                 width: 90, height: 90, borderRadius: '50%',
-                background: `linear-gradient(135deg, ${BRAND.teal}, #14b8a6)`,
+                background: `linear-gradient(135deg, ${BRAND.tealLight}, #14b8a6)`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 marginBottom: 28, boxShadow: `0 8px 32px rgba(45,212,191,0.4)`,
                 animation: 'fadeSlideIn 0.6s ease-out, pulseGlow 3s ease-in-out infinite',
@@ -128,14 +127,44 @@ export default function ThankYouBooked() {
 
             <p style={{
                 fontSize: 18, color: 'rgba(255,255,255,0.7)', textAlign: 'center',
-                maxWidth: 560, marginBottom: 40, lineHeight: 1.7,
+                maxWidth: 560, marginBottom: 24, lineHeight: 1.7,
                 animation: 'fadeSlideIn 0.6s ease-out 0.2s backwards',
             }}>
                 Your strategy call is locked in. Check your email for confirmation details.
-                <br /><strong style={{ color: 'white' }}>Now, here's your homework before the call:</strong>
             </p>
 
-            {/* ─── MANDATORY SECTION ─── */}
+            {/* ─── BLUEPRINT REMINDER CARD ─── */}
+            <div style={{
+                maxWidth: 580, width: '100%', marginBottom: 36,
+                animation: 'fadeSlideIn 0.6s ease-out 0.25s backwards',
+            }}>
+                <div style={{
+                    background: `linear-gradient(135deg, rgba(197,184,150,0.1), rgba(15,118,110,0.06))`,
+                    border: `1px solid ${BRAND.gold}40`,
+                    borderRadius: 18, padding: '24px 24px',
+                    display: 'flex', alignItems: 'center', gap: 18,
+                }}>
+                    <div style={{
+                        width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+                        background: `linear-gradient(135deg, ${BRAND.gold}20, ${BRAND.goldDark}15)`,
+                        border: `1px solid ${BRAND.gold}30`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                        <FileText size={24} color={BRAND.gold} />
+                    </div>
+                    <div>
+                        <div style={{ fontSize: 16, fontWeight: 800, color: 'white', marginBottom: 4 }}>
+                            Your Blueprint Is Being Finalized
+                        </div>
+                        <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>
+                            Your custom Patient Acquisition Blueprint — including competitor analysis, GMB insights,
+                            and a full implementation plan — will be ready for your call.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* ─── PRE-CALL HOMEWORK ─── */}
             <div style={{
                 background: 'rgba(255,255,255,0.06)',
                 border: `2px solid ${BRAND.gold}50`,
@@ -192,7 +221,7 @@ export default function ThankYouBooked() {
                         }}
                         onMouseOver={e => {
                             e.currentTarget.style.background = 'rgba(45,212,191,0.08)';
-                            e.currentTarget.style.borderColor = `${BRAND.teal}40`;
+                            e.currentTarget.style.borderColor = `${BRAND.tealLight}40`;
                             e.currentTarget.style.transform = 'translateX(4px)';
                         }}
                         onMouseOut={e => {
@@ -204,11 +233,11 @@ export default function ThankYouBooked() {
                         {/* Play Button */}
                         <div style={{
                             width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
-                            background: `linear-gradient(135deg, ${BRAND.teal}30, ${BRAND.teal}10)`,
-                            border: `2px solid ${BRAND.teal}40`,
+                            background: `linear-gradient(135deg, ${BRAND.tealLight}30, ${BRAND.tealLight}10)`,
+                            border: `2px solid ${BRAND.tealLight}40`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
-                            <Play size={20} color={BRAND.teal} fill={BRAND.teal} />
+                            <Play size={20} color={BRAND.tealLight} fill={BRAND.tealLight} />
                         </div>
 
                         {/* Text */}
@@ -229,13 +258,51 @@ export default function ThankYouBooked() {
                             }}>
                                 <Clock size={12} /> {video.duration}
                             </span>
-                            <ArrowRight size={16} color={BRAND.teal} />
+                            <ArrowRight size={16} color={BRAND.tealLight} />
                         </div>
                     </a>
                 ))}
             </div>
 
-
+            {/* ─── INSTAGRAM CTA (Secondary) ─── */}
+            <div style={{
+                maxWidth: 520, width: '100%',
+                animation: 'fadeSlideIn 0.6s ease-out 0.45s backwards',
+                textAlign: 'center', marginBottom: 24,
+            }}>
+                <p style={{
+                    fontSize: 15, color: 'rgba(255,255,255,0.5)', marginBottom: 16, lineHeight: 1.6,
+                }}>
+                    Want daily clinic growth tips while you wait for your call?
+                </p>
+                <a
+                    href={INSTAGRAM_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 10,
+                        padding: '14px 28px',
+                        background: `linear-gradient(135deg, rgba(131,58,180,0.2), rgba(253,29,29,0.15), rgba(252,176,69,0.15))`,
+                        border: '1px solid rgba(131,58,180,0.3)',
+                        borderRadius: 14, textDecoration: 'none',
+                        fontSize: 15, fontWeight: 700, color: 'white',
+                        transition: 'all 0.25s ease',
+                        cursor: 'pointer',
+                    }}
+                    onMouseOver={e => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 8px 24px rgba(131,58,180,0.2)';
+                    }}
+                    onMouseOut={e => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                    }}
+                >
+                    <Instagram size={20} />
+                    Follow @livformormedia
+                    <ExternalLink size={14} style={{ opacity: 0.6 }} />
+                </a>
+            </div>
 
             {/* ─── FOOTER ─── */}
             <p style={{

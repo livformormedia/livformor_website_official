@@ -1,27 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Gift, Sparkles, Flame, Star, AlertTriangle, CheckCircle } from 'lucide-react';
+import {
+    Calendar, Clock, Gift, Sparkles, Flame, Star, AlertTriangle, CheckCircle,
+    Search, BarChart3, MapPin, FileText, Zap
+} from 'lucide-react';
 
 const BRAND = {
-    dark: '#0b2b2e',
-    teal: '#2dd4bf',
+    dark: '#0d3b40',
+    teal: '#0f766e',
+    tealLight: '#2dd4bf',
     gold: '#c5b896',
-    goldDark: '#a89970',
+    goldDark: '#b5a882',
 };
 
 const BOOKING_SLUG = 'livformor-intro-meeting0cpxof';
 const CALENDAR_EMBED = `https://api.leadconnectorhq.com/widget/booking/${BOOKING_SLUG}`;
 
 export default function ThankYouBasic() {
-    const [timeLeft, setTimeLeft] = useState({ hours: 47, minutes: 59, seconds: 59 });
+    const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 59, seconds: 59 });
 
-    // SEO — NO Lead pixel here
     useEffect(() => {
         document.title = 'Thank You! | LivForMor Media';
-
-        // Track PageView only — intentionally NO Lead event
-        // @ts-ignore
         if (typeof window !== 'undefined' && window.fbq) {
-            // @ts-ignore
             window.fbq('track', 'ViewContent', { content_name: 'Thank You - Basic' });
         }
     }, []);
@@ -36,7 +35,6 @@ export default function ThankYouBasic() {
             target = Date.now() + 1 * 60 * 60 * 1000;
             localStorage.setItem('livformor_basic_bonus_1hr_end', target.toString());
         }
-
         const tick = () => {
             const diff = Math.max(0, target - Date.now());
             setTimeLeft({
@@ -52,10 +50,17 @@ export default function ThankYouBasic() {
 
     const pad = (n) => String(n).padStart(2, '0');
 
+    const blueprintItems = [
+        { icon: <Search size={20} />, title: 'Clinic Strengths & Weaknesses', desc: 'Deep audit of your current marketing, website, and patient journey' },
+        { icon: <BarChart3 size={20} />, title: 'Competitor Intelligence', desc: 'What your top competitors are doing — ads, messaging, positioning' },
+        { icon: <MapPin size={20} />, title: 'Google Business Profile Analysis', desc: 'Your GMB performance, review signals, and local SEO gaps' },
+        { icon: <FileText size={20} />, title: 'Custom Implementation Plan', desc: 'Step-by-step roadmap tailored to your clinic\'s growth potential' },
+    ];
+
     return (
         <div style={{
             minHeight: '100vh',
-            background: `linear-gradient(135deg, ${BRAND.dark} 0%, #0a3a3f 30%, ${BRAND.dark} 100%)`,
+            background: `linear-gradient(170deg, ${BRAND.dark} 0%, #0a3a3f 40%, ${BRAND.dark} 100%)`,
             fontFamily: "'Nunito Sans', sans-serif",
             display: 'flex', flexDirection: 'column', alignItems: 'center',
             padding: '40px 20px 60px',
@@ -72,6 +77,14 @@ export default function ThankYouBasic() {
                 @keyframes shimmer {
                     0% { background-position: -200% center; }
                     100% { background-position: 200% center; }
+                }
+                @keyframes buildProgress {
+                    0% { width: 0%; }
+                    100% { width: 100%; }
+                }
+                @keyframes dotPulse {
+                    0%, 100% { opacity: 0.3; }
+                    50% { opacity: 1; }
                 }
             `}</style>
 
@@ -102,12 +115,120 @@ export default function ThankYouBasic() {
 
             <p style={{
                 fontSize: 18, color: 'rgba(255,255,255,0.7)', textAlign: 'center',
-                maxWidth: 540, marginBottom: 16, lineHeight: 1.6,
+                maxWidth: 540, marginBottom: 32, lineHeight: 1.6,
                 animation: 'fadeSlideIn 0.6s ease-out 0.2s backwards',
             }}>
                 We'd love to chat about how we can help your clinic grow.
-                Book your Patient Generation Call below — let's explore the best path forward.
+                Book your call below — let's explore the best path forward.
             </p>
+
+            {/* ═══ BLUEPRINT SURPRISE CARD ═══ */}
+            <div style={{
+                maxWidth: 580, width: '100%', marginBottom: 36,
+                animation: 'fadeSlideIn 0.6s ease-out 0.25s backwards',
+            }}>
+                <div style={{
+                    background: `linear-gradient(135deg, rgba(197,184,150,0.08), rgba(15,118,110,0.06))`,
+                    border: `2px solid ${BRAND.gold}50`,
+                    borderRadius: 24, padding: '32px 28px', position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: `0 12px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)`,
+                }}>
+                    {/* Corner accent */}
+                    <div style={{
+                        position: 'absolute', top: -1, right: -1, width: 80, height: 80,
+                        background: `linear-gradient(225deg, ${BRAND.gold}20 0%, transparent 60%)`,
+                        borderBottomLeftRadius: 60,
+                    }} />
+
+                    {/* Badge */}
+                    <div style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 8,
+                        background: `linear-gradient(135deg, ${BRAND.gold}18, ${BRAND.goldDark}18)`,
+                        border: `1px solid ${BRAND.gold}35`, borderRadius: 50,
+                        padding: '8px 18px', fontSize: 12, fontWeight: 800, color: BRAND.gold,
+                        marginBottom: 20, textTransform: 'uppercase', letterSpacing: 1.5,
+                    }}>
+                        <Zap size={13} /> Being Built for You Right Now
+                    </div>
+
+                    <h2 style={{
+                        fontSize: 'clamp(20px, 3.5vw, 26px)', fontWeight: 900,
+                        color: 'white', marginBottom: 8, lineHeight: 1.3,
+                    }}>
+                        <Sparkles size={20} style={{ display: 'inline', verticalAlign: 'middle', color: BRAND.gold, marginRight: 8 }} />
+                        Your Custom Clinic Growth Report
+                    </h2>
+
+                    <p style={{
+                        fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7,
+                        marginBottom: 24, maxWidth: 500,
+                    }}>
+                        We're already analyzing your clinic and building a <strong style={{ color: 'white' }}>custom
+                            research report</strong> — completely tailored to your practice. Book the call and we'll
+                        walk through it together.
+                    </p>
+
+                    {/* Blueprint Items */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
+                        {blueprintItems.map((item, i) => (
+                            <div key={i} style={{
+                                display: 'flex', alignItems: 'flex-start', gap: 14,
+                                padding: '14px 16px',
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(255,255,255,0.06)',
+                                borderRadius: 14,
+                            }}>
+                                <div style={{
+                                    width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                                    background: `linear-gradient(135deg, ${BRAND.teal}25, ${BRAND.teal}10)`,
+                                    border: `1px solid ${BRAND.teal}30`,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: BRAND.tealLight,
+                                }}>
+                                    {item.icon}
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: 15, fontWeight: 700, color: 'white', marginBottom: 3 }}>
+                                        {item.title}
+                                    </div>
+                                    <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>
+                                        {item.desc}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Progress bar */}
+                    <div style={{
+                        background: 'rgba(255,255,255,0.06)', borderRadius: 10,
+                        padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 14,
+                    }}>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: BRAND.tealLight }}>
+                                    Building your report
+                                    <span style={{ animation: 'dotPulse 1.5s ease-in-out infinite' }}>...</span>
+                                </span>
+                                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
+                                    Ready by call time
+                                </span>
+                            </div>
+                            <div style={{
+                                height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 4,
+                                overflow: 'hidden',
+                            }}>
+                                <div style={{
+                                    height: '100%', borderRadius: 4,
+                                    background: `linear-gradient(90deg, ${BRAND.teal}, ${BRAND.tealLight})`,
+                                    animation: 'buildProgress 4s ease-out forwards',
+                                }} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {/* ─── URGENCY ALERT ─── */}
             <div style={{
@@ -115,7 +236,7 @@ export default function ThankYouBasic() {
                 background: 'rgba(245,158,11,0.1)',
                 border: '1px solid rgba(245,158,11,0.3)', borderRadius: 14,
                 padding: '12px 20px', marginBottom: 32, maxWidth: 520, width: '100%',
-                animation: 'fadeSlideIn 0.6s ease-out 0.25s backwards',
+                animation: 'fadeSlideIn 0.6s ease-out 0.3s backwards',
             }}>
                 <AlertTriangle size={18} color="#f59e0b" style={{ flexShrink: 0 }} />
                 <span style={{ fontSize: 14, fontWeight: 600, color: '#fbbf24' }}>
@@ -128,7 +249,7 @@ export default function ThankYouBasic() {
                 background: 'rgba(255,255,255,0.06)', border: `2px solid ${BRAND.gold}40`,
                 borderRadius: 24, padding: '28px 32px', maxWidth: 520, width: '100%',
                 textAlign: 'center', marginBottom: 36,
-                animation: 'fadeSlideIn 0.6s ease-out 0.3s backwards',
+                animation: 'fadeSlideIn 0.6s ease-out 0.35s backwards',
             }}>
                 <div style={{
                     display: 'inline-flex', alignItems: 'center', gap: 8,
@@ -145,7 +266,8 @@ export default function ThankYouBasic() {
                     10 FREE Organic Video Scripts On Top
                 </h2>
                 <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', marginBottom: 20 }}>
-                    Book in the next hour and you get 10 organic video scripts to warm up leads on your social media, on top of everything else.
+                    Book in the next hour and you get 10 organic video scripts to warm up leads on your social media,
+                    on top of everything else.
                 </p>
 
                 {/* Countdown */}
@@ -200,7 +322,7 @@ export default function ThankYouBasic() {
                 </div>
             </div>
 
-            {/* ─── WHAT YOU GET ─── */}
+            {/* ─── WHAT TO EXPECT ─── */}
             <div style={{
                 maxWidth: 520, width: '100%',
                 animation: 'fadeSlideIn 0.6s ease-out 0.5s backwards',
@@ -212,16 +334,16 @@ export default function ThankYouBasic() {
                     What Happens on the Call
                 </h3>
                 {[
-                    'We audit your current patient acquisition strategy',
-                    'You get a custom blueprint for your clinic\'s growth',
-                    'We discuss if we\'re the right fit — zero pressure',
+                    'We walk through your Custom Clinic Growth Report together',
+                    'You get a clear picture of where your clinic stands',
+                    'We discuss the best growth path — tailored to you',
                     'You walk away with actionable insights either way',
                 ].map((item, i) => (
                     <div key={i} style={{
                         display: 'flex', alignItems: 'flex-start', gap: 12,
                         marginBottom: 14, fontSize: 15, color: 'rgba(255,255,255,0.75)',
                     }}>
-                        <CheckCircle size={18} color={BRAND.teal} style={{ flexShrink: 0, marginTop: 2 }} />
+                        <CheckCircle size={18} color={BRAND.tealLight} style={{ flexShrink: 0, marginTop: 2 }} />
                         {item}
                     </div>
                 ))}
