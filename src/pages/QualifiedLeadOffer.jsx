@@ -460,12 +460,23 @@ function AssessmentModal({ isOpen, onClose }) {
         const utms = getUTMParams();
         const qualified = isQualified(formData);
 
+        // Generate unique event_id for deduplication between client pixel and server CAPI
+        const eventId = typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : 'evt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+
         const payload = {
             ...formData,
             ...utms,
             qualified: qualified ? 'yes' : 'no',
             source_page: 'cash-offer',
             submitted_at: new Date().toISOString(),
+        };
+
+        // Helper to read cookies
+        const getCookie = (name) => {
+            const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? match[2] : '';
         };
 
         // 1. GHL webhook
@@ -481,6 +492,8 @@ function AssessmentModal({ isOpen, onClose }) {
 
         // 2. Client-side FB pixel + 3. Server-side CAPI - only for qualified leads
         if (qualified) {
+            // Client-side pixel Lead event (fires to ALL initialized pixels)
+            // eventID param enables deduplication with server-side CAPI
             // @ts-ignore
             if (typeof window !== 'undefined' && window.fbq) {
                 // @ts-ignore
@@ -489,36 +502,69 @@ function AssessmentModal({ isOpen, onClose }) {
                     content_category: 'Qualified',
                     value: 0,
                     currency: 'USD',
-                });
+                }, { eventID: eventId });
             }
 
+            // Shared CAPI payload fields
+            const capiBase = {
+                event_name: 'Lead',
+                event_id: eventId,
+                email: formData.email,
+                phone: formData.phone,
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                fbc: getCookie('_fbc'),
+                fbp: getCookie('_fbp'),
+                client_ua: navigator.userAgent,
+                event_source_url: window.location.href,
+                content_name: 'Cash Offer Assessment',
+                content_category: 'Qualified',
+                value: 0,
+                currency: 'USD',
+            };
+
+            // 3a. Server-side CAPI → existing pixel (822229636864741)
             try {
-                const getCookie = (name) => {
-                    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                    return match ? match[2] : '';
-                };
                 await fetch('/api/fb-capi', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(capiBase),
+                });
+            } catch (err) {
+                console.error('CAPI (existing pixel) error:', err);
+            }
+
+            // 3b. Server-side CAPI → new pixel (1864098504252459)
+            try {
+                await fetch('/api/fb-capi-qualified', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        event_name: 'Lead',
-                        email: formData.email,
-                        phone: formData.phone,
-                        firstName: formData.firstName,
-                        lastName: formData.lastName,
-                        fbc: getCookie('_fbc'),
-                        fbp: getCookie('_fbp'),
-                        client_ua: navigator.userAgent,
-                        event_source_url: window.location.href,
-                        content_name: 'Cash Offer Assessment',
-                        content_category: 'Qualified',
-                        value: 0,
-                        currency: 'USD',
+                        ...capiBase,
+                        // Pass UTMs + fbclid for attribution tracking
+                        utm_source: utms.utm_source,
+                        utm_medium: utms.utm_medium,
+                        utm_campaign: utms.utm_campaign,
+                        utm_content: utms.utm_content,
+                        utm_term: utms.utm_term,
+                        fbclid: utms.fbclid,
                     }),
                 });
             } catch (err) {
-                console.error('CAPI error:', err);
+                console.error('CAPI (qualified pixel) error:', err);
             }
+        }
+
+        // 4. Trigger Native Research Engine (Awaited)
+        // We await this so the browser doesn't kill the connection before the Edge Function finishes.
+        try {
+            await fetch('https://yrfobzuiqcuhylstiukn.supabase.co/functions/v1/generate-research-report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        } catch (err) {
+            console.error("Research trigger error", err);
         }
 
         setIsSubmitting(false);
@@ -759,7 +805,7 @@ function AssessmentModal({ isOpen, onClose }) {
                                         borderRadius: 50, cursor: isSubmitting ? 'not-allowed' : 'pointer',
                                         opacity: isSubmitting ? 0.7 : 1,
                                     }}>
-                                        {isSubmitting ? 'Submitting...' : 'Submit Application'}
+                                        {isSubmitting ? 'Generating AI Blueprint (Takes ~60s)...' : 'Submit Application'}
                                     </button>
                                 </div>
                             </div>

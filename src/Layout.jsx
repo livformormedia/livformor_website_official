@@ -15,11 +15,12 @@ export default function Layout({ children }) {
           s.parentNode.insertBefore(t,s)}(window, document,'script',
           'https://connect.facebook.net/en_US/fbevents.js');
           fbq('init', '822229636864741');
+          fbq('init', '1864098504252459');
           fbq('track', 'PageView');
         `
       }} />
       <noscript dangerouslySetInnerHTML={{
-        __html: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=822229636864741&ev=PageView&noscript=1" />`
+        __html: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=822229636864741&ev=PageView&noscript=1" /><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1864098504252459&ev=PageView&noscript=1" />`
       }} />
 
       <style jsx>{`

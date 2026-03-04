@@ -1,11 +1,12 @@
-// Facebook Conversions API (Server-Side) Proxy
+// Facebook Conversions API (Server-Side) for Qualified Lead Pixel
+// Pixel: 1864098504252459
 // Sends events from the server so they bypass ad blockers and are more reliable
-// Requires FB_CAPI_ACCESS_TOKEN environment variable set in Vercel
+// Requires FB_CAPI_QUALIFIED_TOKEN environment variable set in Vercel
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
 
-const PIXEL_ID = '822229636864741';
+const PIXEL_ID = '1864098504252459';
 const FB_API_VERSION = 'v21.0';
 
 function hashSHA256(value: string): string {
@@ -27,9 +28,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const accessToken = process.env.FB_CAPI_ACCESS_TOKEN;
+    const accessToken = process.env.FB_CAPI_QUALIFIED_TOKEN;
     if (!accessToken) {
-        console.error('FB_CAPI_ACCESS_TOKEN not set');
+        console.error('FB_CAPI_QUALIFIED_TOKEN not set');
         return res.status(500).json({ error: 'Server configuration error' });
     }
 
@@ -52,6 +53,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             content_category,
             value,
             currency,
+            // UTMs & fbclid for attribution
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            utm_content,
+            utm_term,
+            fbclid,
         } = req.body;
 
         // Build user_data with hashed PII
@@ -67,6 +75,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         user_data.client_ip_address = client_ip || req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '';
         user_data.client_user_agent = client_ua || req.headers['user-agent'] || '';
 
+        // Build custom_data with UTMs for attribution
+        const custom_data: Record<string, any> = {
+            content_name: content_name || '',
+            content_category: content_category || '',
+            value: value || 0,
+            currency: currency || 'USD',
+        };
+
+        // Include UTMs & fbclid in custom_data
+        if (utm_source) custom_data.utm_source = utm_source;
+        if (utm_medium) custom_data.utm_medium = utm_medium;
+        if (utm_campaign) custom_data.utm_campaign = utm_campaign;
+        if (utm_content) custom_data.utm_content = utm_content;
+        if (utm_term) custom_data.utm_term = utm_term;
+        if (fbclid) custom_data.fbclid = fbclid;
+
         // Build the event
         const event: Record<string, any> = {
             event_name: event_name || 'Lead',
@@ -74,12 +98,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             event_source_url: event_source_url || '',
             action_source: 'website',
             user_data,
-            custom_data: {
-                content_name: content_name || '',
-                content_category: content_category || '',
-                value: value || 0,
-                currency: currency || 'USD',
-            },
+            custom_data,
         };
 
         // Include event_id for deduplication with client-side pixel
@@ -102,13 +121,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const fbResult = await fbResponse.json();
 
         if (!fbResponse.ok) {
-            console.error('FB CAPI error:', JSON.stringify(fbResult));
+            console.error('FB CAPI Qualified error:', JSON.stringify(fbResult));
             return res.status(fbResponse.status).json({ error: 'FB CAPI error', details: fbResult });
         }
 
         return res.status(200).json({ success: true, fb_response: fbResult });
     } catch (error: any) {
-        console.error('FB CAPI handler error:', error);
+        console.error('FB CAPI Qualified handler error:', error);
         return res.status(500).json({ error: 'Internal server error', message: error.message });
     }
 }

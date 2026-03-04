@@ -26,15 +26,15 @@ export default function ThankYouBasic() {
         }
     }, []);
 
-    // 48hr countdown timer
+    // 1hr countdown timer
     useEffect(() => {
-        const endTime = localStorage.getItem('livformor_basic_bonus_end');
+        const endTime = localStorage.getItem('livformor_basic_bonus_1hr_end');
         let target;
         if (endTime) {
             target = parseInt(endTime, 10);
         } else {
-            target = Date.now() + 48 * 60 * 60 * 1000;
-            localStorage.setItem('livformor_basic_bonus_end', target.toString());
+            target = Date.now() + 1 * 60 * 60 * 1000;
+            localStorage.setItem('livformor_basic_bonus_1hr_end', target.toString());
         }
 
         const tick = () => {
@@ -142,10 +142,10 @@ export default function ThankYouBasic() {
 
                 <h2 style={{ fontSize: 22, fontWeight: 800, color: 'white', marginBottom: 8 }}>
                     <Flame size={20} style={{ display: 'inline', verticalAlign: 'middle', color: '#f59e0b', marginRight: 6 }} />
-                    10 FREE Warm-Up Video Scripts
+                    10 FREE Organic Video Scripts On Top
                 </h2>
                 <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', marginBottom: 20 }}>
-                    Book within 48 hours and we'll create scripts that warm up leads <em>before</em> they see your ads.
+                    Book in the next hour and you get 10 organic video scripts to warm up leads on your social media, on top of everything else.
                 </p>
 
                 {/* Countdown */}

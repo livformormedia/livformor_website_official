@@ -48,6 +48,7 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AdBuilder from './pages/AdBuilder';
+import BlueprintViewer from './pages/BlueprintViewer';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import CashOffer from './pages/CashOffer';
@@ -65,6 +66,7 @@ import __Layout from './Layout.jsx';
 
 export const PAGES = {
     "ad-builder": AdBuilder,
+    "blueprint": BlueprintViewer,
     "Blog": Blog,
     "BlogPost": BlogPost,
     "cash-offer": CashOffer,
