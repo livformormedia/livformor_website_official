@@ -277,8 +277,8 @@ function AssessmentModal({ isOpen, onClose }) {
                                     <label style={sectionLabel}>2. What is your monthly budget to invest in ads?</label>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                         {[
-                                            { value: '0-3000', label: '$0 – $3,000/month' },
-                                            { value: '3000+', label: '$3,000+/month' },
+                                            { value: '0-2000', label: '$0 – $2,000/month' },
+                                            { value: '2000+', label: '$2,000+/month' },
                                         ].map(opt => (
                                             <label key={opt.value} style={optionCard(formData.monthlyBudget === opt.value)}
                                                 onClick={() => handleChange('monthlyBudget', opt.value)}>
@@ -316,6 +316,7 @@ function AssessmentModal({ isOpen, onClose }) {
                                         {[
                                             { value: 'ketamine', label: 'Ketamine Infusions' },
                                             { value: 'tms', label: 'TMS' },
+                                            { value: 'spravato', label: 'Spravato (Esketamine)' },
                                         ].map(t => (
                                             <div key={t.value} style={optionCard(formData.services.includes(t.value))}
                                                 onClick={() => handleChange('services', t.value)}>
@@ -2036,27 +2037,7 @@ export default function Services() {
                 }
             `}</style>
 
-            {/* ─── URGENCY BANNER ─── */}
-            {showBanner && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
-                    background: `linear-gradient(135deg, ${BRAND.gold} 0%, #d4c48a 50%, ${BRAND.gold} 100%)`,
-                    backgroundSize: '200% 100%',
-                    animation: 'gradientShift 6s ease-in-out infinite',
-                    padding: '14px 24px', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', gap: 12, flexWrap: 'wrap',
-                    boxShadow: '0 4px 20px rgba(197,184,150,0.4)',
-                }}>
-                    <span style={{ fontSize: 15, color: BRAND.dark, fontWeight: 700, textAlign: 'center' }}>
-                        🔥 Book within 48 hours & get <span style={{ fontWeight: 900, textDecoration: 'underline' }}>10 FREE organic video scripts</span> to warm up your leads
-                    </span>
-                    <button onClick={() => setShowBanner(false)} style={{
-                        background: 'none', border: 'none', color: 'rgba(11,43,46,0.5)',
-                        cursor: 'pointer', padding: 4, lineHeight: 1,
-                    }}><X size={16} /></button>
-                </div>
-            )}
-            {showBanner && <div style={{ height: 52 }} />}
+
 
             <HeroSection />
             <ProblemSection />
