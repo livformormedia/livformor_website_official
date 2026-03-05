@@ -110,8 +110,8 @@ export default function ThankYou() {
       </div>
 
       <h1 style={{
-        fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 900,
-        color: 'white', textAlign: 'center', marginBottom: 12,
+        fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: 900,
+        color: 'white', textAlign: 'center', marginBottom: 16,
         animation: 'fadeSlideIn 0.6s ease-out 0.1s backwards',
       }}>
         Wait — <span style={{
@@ -123,19 +123,19 @@ export default function ThankYou() {
       </h1>
 
       <p style={{
-        fontSize: 18, color: 'rgba(255,255,255,0.85)', textAlign: 'center',
-        maxWidth: 540, marginBottom: 8, lineHeight: 1.6,
+        fontSize: 22, color: 'white', textAlign: 'center',
+        maxWidth: 600, marginBottom: 12, lineHeight: 1.5,
         animation: 'fadeSlideIn 0.6s ease-out 0.15s backwards',
-        fontWeight: 600,
+        fontWeight: 800,
       }}>
         We have a surprise for you.
       </p>
       <p style={{
-        fontSize: 16, color: 'rgba(255,255,255,0.55)', textAlign: 'center',
-        maxWidth: 520, marginBottom: 36, lineHeight: 1.7,
+        fontSize: 18, color: 'rgba(255,255,255,0.7)', textAlign: 'center',
+        maxWidth: 600, marginBottom: 40, lineHeight: 1.6,
         animation: 'fadeSlideIn 0.6s ease-out 0.2s backwards',
       }}>
-        Our team is currently building an extensive, custom market research report — built from scratch, specifically for <strong style={{ color: 'white' }}>your clinic</strong>. Here's what's inside:
+        Our team is building an extensive, custom market research report — from scratch, specifically for <strong style={{ color: 'white' }}>your clinic</strong>.
       </p>
 
       {/* ═══ MARKET RESEARCH PLAN CARD ═══ */}
@@ -170,19 +170,18 @@ export default function ThankYou() {
 
           {/* Title */}
           <h2 style={{
-            fontSize: 'clamp(20px, 3.5vw, 26px)', fontWeight: 900,
-            color: 'white', marginBottom: 8, lineHeight: 1.3,
+            fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 900,
+            color: 'white', marginBottom: 12, lineHeight: 1.2,
           }}>
-            <Sparkles size={20} style={{ display: 'inline', verticalAlign: 'middle', color: BRAND.gold, marginRight: 8 }} />
+            <Sparkles size={24} style={{ display: 'inline', verticalAlign: 'middle', color: BRAND.gold, marginRight: 8 }} />
             Custom Clinic Growth Report
           </h2>
 
           <p style={{
-            fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7,
-            marginBottom: 24, maxWidth: 500,
+            fontSize: 18, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6,
+            marginBottom: 28, maxWidth: 500,
           }}>
-            This isn't a generic PDF. We're building a <strong style={{ color: 'white' }}>deep, personalized analysis</strong> of your clinic,
-            your competitors, and your market — from scratch.
+            This isn't a generic PDF. We're building a <strong style={{ color: 'white' }}>deep, personalized analysis</strong> of your clinic and your market.
           </p>
 
           {/* Blueprint Items */}
@@ -205,10 +204,10 @@ export default function ThankYou() {
                   {item.icon}
                 </div>
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: 'white', marginBottom: 3 }}>
+                  <div style={{ fontSize: 17, fontWeight: 800, color: 'white', marginBottom: 4 }}>
                     {item.title}
                   </div>
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>
+                  <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', lineHeight: 1.5 }}>
                     {item.desc}
                   </div>
                 </div>
@@ -250,82 +249,74 @@ export default function ThankYou() {
 
       {/* ═══ IMPORTANT: HOW YOU'LL RECEIVE IT ═══ */}
       <div style={{
-        maxWidth: 560, width: '100%', marginBottom: 32,
+        maxWidth: 580, width: '100%', marginBottom: 36,
         animation: 'fadeSlideIn 0.6s ease-out 0.3s backwards',
       }}>
         <div style={{
           background: 'rgba(245,158,11,0.08)',
           border: '2px solid rgba(245,158,11,0.25)',
-          borderRadius: 20, padding: '28px 24px',
+          borderRadius: 20, padding: '32px 28px',
         }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16,
+          <h3 style={{
+            fontSize: 22, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase',
+            letterSpacing: 1, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10
           }}>
-            <AlertTriangle size={20} color="#f59e0b" />
-            <span style={{ fontSize: 16, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1 }}>
-              Important — Read This
-            </span>
-          </div>
-          <div style={{ fontSize: 15, color: 'rgba(255,255,255,0.8)', lineHeight: 1.8 }}>
-            <p style={{ marginBottom: 14 }}>
-              Your custom report will be ready in the <strong style={{ color: 'white' }}>next few hours</strong>.
-              Here's how you'll get it:
-            </p>
-            <div style={{ paddingLeft: 4, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {[
-                { num: '1', text: "We\u2019ll send you an SMS when it\u2019s ready" },
-                { num: '2', text: 'The SMS will tell you to check your email' },
-                { num: '3', text: <><strong style={{ color: 'white' }}>Reply to the email</strong> to confirm you received it — that's the only way we know you got it</> },
-              ].map((step) => (
-                <div key={step.num} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                    background: `linear-gradient(135deg, ${BRAND.gold}30, ${BRAND.goldDark}30)`,
-                    border: `1px solid ${BRAND.gold}40`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 13, fontWeight: 800, color: BRAND.gold,
-                  }}>{step.num}</div>
-                  <span style={{ paddingTop: 3 }}>{step.text}</span>
-                </div>
-              ))}
-            </div>
+            <AlertTriangle size={24} color="#f59e0b" />
+            Important — Next Steps
+          </h3>
+
+          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, marginBottom: 20 }}>
+            Your custom report will be ready in the next few hours. Here is the exact process:
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {[
+              { num: '1', text: "We\u2019ll text you when it\u2019s ready." },
+              { num: '2', text: "Check your email for the secure link." },
+              { num: '3', text: <><strong style={{ color: 'white' }}>Reply to the email</strong> to confirm receipt.</> },
+            ].map((step) => (
+              <div key={step.num} style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                  background: `linear-gradient(135deg, ${BRAND.gold}30, ${BRAND.goldDark}30)`,
+                  border: `1px solid ${BRAND.gold}40`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 15, fontWeight: 800, color: BRAND.gold,
+                }}>{step.num}</div>
+                <span style={{ fontSize: 18, color: 'white', fontWeight: 600 }}>{step.text}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* ═══ MUTUAL COMMITMENT ═══ */}
       <div style={{
-        maxWidth: 560, width: '100%', marginBottom: 36,
+        maxWidth: 580, width: '100%', marginBottom: 40,
         animation: 'fadeSlideIn 0.6s ease-out 0.35s backwards',
       }}>
         <div style={{
-          background: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 20, padding: '28px 24px',
+          background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 20, padding: '32px 28px',
         }}>
-          <h3 style={{ fontSize: 20, fontWeight: 800, color: 'white', marginBottom: 14 }}>
-            One Thing We Need From You
+          <h3 style={{ fontSize: 24, fontWeight: 900, color: 'white', marginBottom: 16 }}>
+            One Rule Before We Speak
           </h3>
-          <p style={{
-            fontSize: 15, color: 'rgba(255,255,255,0.75)', lineHeight: 1.8, marginBottom: 16,
-          }}>
-            We're spending real hours building this report from scratch — pulling your competitor data,
-            analyzing your market, putting together a step-by-step plan specifically for your clinic.
-            That takes work. We do it because it makes the call 10x more valuable for both of us.
+          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.8)', lineHeight: 1.6, marginBottom: 20 }}>
+            We spend real hours building this custom report. It's not a generic PDF — it's your actual market data.
           </p>
-          <p style={{
-            fontSize: 15, color: 'rgba(255,255,255,0.75)', lineHeight: 1.8, marginBottom: 16,
-          }}>
-            So here's the deal: <strong style={{ color: 'white' }}>go through the report before the call</strong>.
-            Know your numbers. Know what your competitors are doing.
-            That way we can actually have a real conversation about your growth — not start from zero.
+          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.8)', lineHeight: 1.6, marginBottom: 24 }}>
+            Our only rule: <strong style={{ color: 'white' }}>You must review it before the call.</strong>
           </p>
-          <p style={{
-            fontSize: 15, color: BRAND.gold, lineHeight: 1.8, fontWeight: 700,
+
+          <div style={{
+            background: `rgba(197,184,150,0.1)`, padding: '16px 20px',
+            borderRadius: 12, borderLeft: `4px solid ${BRAND.gold}`
           }}>
-            If you show up without reviewing it, we'll end the call and rebook it for after you do.
-            Simple as that. This works when we both come prepared.
-          </p>
+            <p style={{ fontSize: 18, color: BRAND.gold, lineHeight: 1.5, fontWeight: 700, margin: 0 }}>
+              If you show up without reading it, we will end the call and rebook you. This only works if we both come prepared.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -346,13 +337,13 @@ export default function ThankYou() {
           <Gift size={14} /> Bonus
         </div>
 
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: 'white', marginBottom: 8 }}>
-          <Flame size={20} style={{ display: 'inline', verticalAlign: 'middle', color: '#f59e0b', marginRight: 6 }} />
+        <h2 style={{ fontSize: 26, fontWeight: 900, color: 'white', marginBottom: 12 }}>
+          <Flame size={24} style={{ display: 'inline', verticalAlign: 'middle', color: '#f59e0b', marginRight: 8 }} />
           10 FREE Organic Video Scripts
         </h2>
-        <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.6)', marginBottom: 20 }}>
-          Book within the next hour <strong style={{ color: 'rgba(255,255,255,0.85)' }}>and</strong> actually show up to the call prepared —
-          and we'll send you 10 organic video scripts to warm up leads on your social media. On top of everything else.
+        <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.8)', marginBottom: 24, lineHeight: 1.6 }}>
+          Book within the next hour <strong style={{ color: 'white' }}>and</strong> show up prepared —
+          and we'll send you 10 proven video scripts to warm up leads on your social media.
         </p>
 
         {/* Countdown */}
