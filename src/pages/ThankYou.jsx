@@ -304,26 +304,27 @@ export default function ThankYou() {
           borderRadius: 20, padding: '28px 24px',
         }}>
           <h3 style={{ fontSize: 20, fontWeight: 800, color: 'white', marginBottom: 14 }}>
-            🤝 This Is a Two-Way Street
+            One Thing We Need From You
           </h3>
           <p style={{
-            fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.8, marginBottom: 16,
+            fontSize: 15, color: 'rgba(255,255,255,0.75)', lineHeight: 1.8, marginBottom: 16,
           }}>
-            We're putting real time and effort into building this report for you — competitor data, market gaps,
-            custom recommendations. All of it specific to your clinic.
+            We're spending real hours building this report from scratch — pulling your competitor data,
+            analyzing your market, putting together a step-by-step plan specifically for your clinic.
+            That takes work. We do it because it makes the call 10x more valuable for both of us.
           </p>
           <p style={{
-            fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.8, marginBottom: 16,
+            fontSize: 15, color: 'rgba(255,255,255,0.75)', lineHeight: 1.8, marginBottom: 16,
           }}>
-            In return, we ask one thing: <strong style={{ color: 'white' }}>go through the report before the call</strong>.
-            Not because we're better than anyone — but because this only works if we're both prepared.
-            If we're going to spend time on your market together, you should come knowing what's in there.
+            So here's the deal: <strong style={{ color: 'white' }}>go through the report before the call</strong>.
+            Know your numbers. Know what your competitors are doing.
+            That way we can actually have a real conversation about your growth — not start from zero.
           </p>
           <p style={{
-            fontSize: 15, color: 'rgba(255,255,255,0.55)', lineHeight: 1.8, fontStyle: 'italic',
+            fontSize: 15, color: BRAND.gold, lineHeight: 1.8, fontWeight: 700,
           }}>
-            If you show up without reviewing it, we won't be able to give you the full value of the call.
-            It's not about gatekeeping — it's about making sure <em>your</em> time is well spent too.
+            If you show up without reviewing it, we'll end the call and rebook it for after you do.
+            Simple as that. This works when we both come prepared.
           </p>
         </div>
       </div>
