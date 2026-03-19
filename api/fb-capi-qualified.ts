@@ -60,6 +60,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             utm_content,
             utm_term,
             fbclid,
+            // Test event code (for Meta Test Events tab visibility)
+            test_event_code,
         } = req.body;
 
         // Build user_data with hashed PII
@@ -109,19 +111,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Send to Facebook Conversions API
         const fbUrl = `https://graph.facebook.com/${FB_API_VERSION}/${PIXEL_ID}/events`;
 
+        const payload: Record<string, any> = {
+            data: [event],
+            access_token: accessToken,
+        };
+
+        // Include test_event_code if provided (for Meta Test Events tab)
+        if (test_event_code) {
+            payload.test_event_code = test_event_code;
+        }
+
+        console.log('[fb-capi-qualified] Sending to:', fbUrl);
+        console.log('[fb-capi-qualified] Event payload:', JSON.stringify({ ...payload, access_token: '***REDACTED***' }));
+
         const fbResponse = await fetch(fbUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                data: [event],
-                access_token: accessToken,
-            }),
+            body: JSON.stringify(payload),
         });
 
         const fbResult = await fbResponse.json();
+        console.log('[fb-capi-qualified] Meta response status:', fbResponse.status, 'body:', JSON.stringify(fbResult));
 
         if (!fbResponse.ok) {
-            console.error('FB CAPI Qualified error:', JSON.stringify(fbResult));
+            console.error('[fb-capi-qualified] FB CAPI error:', JSON.stringify(fbResult));
             return res.status(fbResponse.status).json({ error: 'FB CAPI error', details: fbResult });
         }
 

@@ -18,7 +18,7 @@ export default function StructuredData({ type = 'organization' }) {
         "@type": "Organization",
         "name": "LivForMor Media",
         "url": "https://livformor.com",
-        "logo": "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/b6fc53ddd_LivForMorMediaLogo.png",
+        "logo": "/images/LivForMorMediaLogo.png",
         "description": "Specialized marketing agency for mental health clinics. We help TMS, Ketamine, Spravato, and Psychedelic therapy clinics attract high-quality patients through proven strategies.",
         "founder": {
           "@type": "Person",

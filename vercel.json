@@ -16,6 +16,14 @@
             "destination": "/api/sitemap.xml"
         },
         {
+            "source": "/exomind/training",
+            "destination": "/exomind-training.html"
+        },
+        {
+            "source": "/exomind",
+            "destination": "/exomind.html"
+        },
+        {
             "source": "/((?!api/).*)",
             "destination": "/index.html"
         }

@@ -13,8 +13,11 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
     lastName: '',
     email: '',
     phone: '',
+    website: '',
     clinicName: '',
     clinicType: '',
+    cityState: '',
+    monthlyBudget: '',
     monthlyPatients: '',
     biggestChallenge: ''
   });
@@ -48,14 +51,49 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
       if (onSubmit) {
         onSubmit(formData);
       }
+
+      // Trigger Native Research Engine (fire-and-forget)
+      fetch('/api/generate-blueprint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, source: 'Home Page Free Resources' }),
+        keepalive: true,
+      }).catch(err => console.error("Research trigger error", err));
+
+      // Queue for deep dashboard generation (NotebookLM via local listener)
+      fetch('https://yrfobzuiqcuhylstiukn.supabase.co/functions/v1/queue-dashboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clinic_name: formData.clinicName || `${formData.firstName} ${formData.lastName}`.trim(),
+          clinic_domain: formData.website,
+          services: [formData.clinicType],
+          city_state: formData.cityState || '',
+          contact_name: `${formData.firstName} ${formData.lastName}`.trim(),
+          contact_email: formData.email,
+          monthly_budget: formData.monthlyBudget,
+          team_structure: '',
+        }),
+        keepalive: true,
+      }).catch(err => console.error("Dashboard queue error", err));
+
     } catch (error) {
       console.error('Error submitting form:', error);
       // Optional: Show user error feedback here
     }
 
-    setIsSubmitting(false);
+    // Generate unique event_id for deduplication between client pixel and server CAPI
+    const eventId = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : 'evt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
 
-    // Track Facebook event - Lead
+    // Helper to read cookies
+    const getCookie = (name) => {
+      const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+      return match ? match[2] : '';
+    };
+
+    // Track Facebook event - Lead (client-side pixel with eventID for deduplication)
     if (typeof window.fbq !== 'undefined') {
       window.fbq('track', 'Lead', {
         content_name: 'Resource Form Submission',
@@ -63,13 +101,54 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
         status: 'completed',
         value: 0.00,
         currency: 'USD'
-      });
-      // Also track CompleteRegistration for legacy compatibility if needed
+      }, { eventID: eventId });
       window.fbq('track', 'CompleteRegistration', {
         content_name: 'Resource Form Submission',
         status: 'completed'
       });
     }
+
+    // Server-side CAPI — bypasses Facebook's data sharing restrictions
+    const capiBase = {
+      event_name: 'Lead',
+      event_id: eventId,
+      email: formData.email,
+      phone: formData.phone,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      fbc: getCookie('_fbc'),
+      fbp: getCookie('_fbp'),
+      client_ua: navigator.userAgent,
+      event_source_url: window.location.href,
+      content_name: 'Resource Form Submission',
+      content_category: 'Lead',
+      value: 0,
+      currency: 'USD',
+    };
+
+    // CAPI → existing pixel (822229636864741)
+    try {
+      await fetch('/api/fb-capi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(capiBase),
+      });
+    } catch (err) {
+      console.error('CAPI (existing pixel) error:', err);
+    }
+
+    // CAPI → qualified pixel (1864098504252459)
+    try {
+      await fetch('/api/fb-capi-qualified', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(capiBase),
+      });
+    } catch (err) {
+      console.error('CAPI (qualified pixel) error:', err);
+    }
+
+    setIsSubmitting(false);
 
     // Redirect to Thank You page
     window.location.href = '/ThankYou';
@@ -82,8 +161,11 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
       lastName: '',
       email: '',
       phone: '',
+      website: '',
       clinicName: '',
       clinicType: '',
+      cityState: '',
+      monthlyBudget: '',
       monthlyPatients: '',
       biggestChallenge: ''
     });
@@ -178,10 +260,20 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
                     placeholder="(555) 123-4567"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Clinic Website *</label>
+                  <Input
+                    type="url"
+                    value={formData.website}
+                    onChange={e => handleChange('website', e.target.value)}
+                    placeholder="https://yourclinic.com"
+                    required
+                  />
+                </div>
               </div>
               <Button
                 onClick={handleNext}
-                disabled={!formData.firstName || !formData.lastName || !formData.email}
+                disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.website}
                 className="w-full mt-6 bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white py-3 rounded-full font-semibold"
               >
                 Continue
@@ -203,6 +295,30 @@ export default function ResourceFormModal({ isOpen, onClose, onSubmit }) {
                     placeholder="Your Clinic Name"
                     required
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">City &amp; State *</label>
+                  <Input
+                    value={formData.cityState}
+                    onChange={e => handleChange('cityState', e.target.value)}
+                    placeholder="e.g. Austin, TX"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Marketing Budget</label>
+                  <Select value={formData.monthlyBudget} onValueChange={value => handleChange('monthlyBudget', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select budget range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="under-2k">Under $2,000 / mo</SelectItem>
+                      <SelectItem value="2k-5k">$2,000 – $5,000 / mo</SelectItem>
+                      <SelectItem value="5k-10k">$5,000 – $10,000 / mo</SelectItem>
+                      <SelectItem value="10k-20k">$10,000 – $20,000 / mo</SelectItem>
+                      <SelectItem value="20k+">$20,000+ / mo</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Type of Clinic *</label>

@@ -30,7 +30,7 @@ export default function Navigation({ isScrolled, onOpenResourceForm }) {
             className="flex items-center"
           >
             <img 
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/b6fc53ddd_LivForMorMediaLogo.png"
+              src="/images/LivForMorMediaLogo.png"
               alt="LivForMor Media"
               className="h-12 sm:h-16 w-auto"
             />

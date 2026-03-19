@@ -21,14 +21,14 @@ export default function ExportHTML() {
     <meta property="og:type" content="website">
     <meta property="og:title" content="LivForMor Media - Mental Health Clinic Marketing Experts">
     <meta property="og:description" content="Specialized marketing for TMS, Ketamine, Spravato & Psychedelic Therapy clinics. Proven patient acquisition strategies.">
-    <meta property="og:image" content="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/b6fc53ddd_LivForMorMediaLogo.png">
+    <meta property="og:image" content="/images/LivForMorMediaLogo.png">
     <meta property="og:url" content="https://livformor.com">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="LivForMor Media - Mental Health Clinic Marketing">
     <meta name="twitter:description" content="Specialized marketing for TMS, Ketamine, Spravato & Psychedelic Therapy clinics.">
-    <meta name="twitter:image" content="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/b6fc53ddd_LivForMorMediaLogo.png">
+    <meta name="twitter:image" content="/images/LivForMorMediaLogo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -1300,7 +1300,7 @@ export default function ExportHTML() {
     <nav class="nav" id="nav">
         <div class="nav-container">
             <div class="nav-logo">
-                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/b6fc53ddd_LivForMorMediaLogo.png" alt="LivForMor Media">
+                <img src="/images/LivForMorMediaLogo.png" alt="LivForMor Media">
             </div>
             <div class="nav-links">
                 <a href="#home" class="nav-link">Home</a>
@@ -1874,7 +1874,7 @@ export default function ExportHTML() {
             <div style="max-width: 600px; margin: 0 auto 4rem;">
                 <div class="founder-card">
                     <div class="founder-avatar">
-                        <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/c45d6010d_WhatsAppImage2025-12-08at124721.jpg" alt="Oriel Mor">
+                        <img src="/images/oriel-mor.jpg" alt="Oriel Mor">
                     </div>
                     <h3 class="founder-name">Oriel Mor</h3>
                     <p class="founder-role">Founder & CEO</p>
@@ -2196,7 +2196,7 @@ export default function ExportHTML() {
                 
                 // Redirect after 3 seconds
                 setTimeout(function() {
-                    window.location.href = 'https://clinic-growth-accelerator-85338975.base44.app/';
+                    window.location.href = '/';
                 }, 3000);
             }
         }

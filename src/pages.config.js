@@ -52,6 +52,8 @@ import BlueprintViewer from './pages/BlueprintViewer';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import CashOffer from './pages/CashOffer';
+import ExoMindLanding from './pages/ExoMindLanding';
+import ExoMindThankYou from './pages/ExoMindThankYou';
 import ExportHTML from './pages/ExportHTML';
 import Home from './pages/Home';
 import QualifiedLeadOffer from './pages/QualifiedLeadOffer';
@@ -70,6 +72,8 @@ export const PAGES = {
     "Blog": Blog,
     "BlogPost": BlogPost,
     "cash-offer": CashOffer,
+    "exomind-grow": ExoMindLanding,
+    "exomind-thank-you": ExoMindThankYou,
     "ExportHTML": ExportHTML,
     "Home": Home,
     "qualified-lead": QualifiedLeadOffer,

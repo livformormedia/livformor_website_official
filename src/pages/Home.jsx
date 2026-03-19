@@ -83,7 +83,7 @@ export default function Home() {
     if (!ogImage) {
       const meta = document.createElement('meta');
       meta.setAttribute('property', 'og:image');
-      meta.content = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/b6fc53ddd_LivForMorMediaLogo.png';
+      meta.content = '/images/LivForMorMediaLogo.png';
       document.head.appendChild(meta);
     }
 
@@ -116,7 +116,7 @@ export default function Home() {
     if (!twitterImage) {
       const meta = document.createElement('meta');
       meta.name = 'twitter:image';
-      meta.content = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/b6fc53ddd_LivForMorMediaLogo.png';
+      meta.content = '/images/LivForMorMediaLogo.png';
       document.head.appendChild(meta);
     }
   }, []);

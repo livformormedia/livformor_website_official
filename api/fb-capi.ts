@@ -5,7 +5,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
 
-const PIXEL_ID = '822229636864741';
+const PIXEL_ID = '1864098504252459';
 const FB_API_VERSION = 'v21.0';
 
 function hashSHA256(value: string): string {
@@ -52,6 +52,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             content_category,
             value,
             currency,
+            // Test event code (for Meta Test Events tab visibility)
+            test_event_code,
         } = req.body;
 
         // Build user_data with hashed PII
@@ -90,19 +92,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Send to Facebook Conversions API
         const fbUrl = `https://graph.facebook.com/${FB_API_VERSION}/${PIXEL_ID}/events`;
 
+        const payload: Record<string, any> = {
+            data: [event],
+            access_token: accessToken,
+        };
+
+        // Include test_event_code if provided (for Meta Test Events tab)
+        if (test_event_code) {
+            payload.test_event_code = test_event_code;
+        }
+
+        console.log('[fb-capi] Sending to:', fbUrl);
+        console.log('[fb-capi] Event payload:', JSON.stringify({ ...payload, access_token: '***REDACTED***' }));
+
         const fbResponse = await fetch(fbUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                data: [event],
-                access_token: accessToken,
-            }),
+            body: JSON.stringify(payload),
         });
 
         const fbResult = await fbResponse.json();
+        console.log('[fb-capi] Meta response status:', fbResponse.status, 'body:', JSON.stringify(fbResult));
 
         if (!fbResponse.ok) {
-            console.error('FB CAPI error:', JSON.stringify(fbResult));
+            console.error('[fb-capi] FB CAPI error:', JSON.stringify(fbResult));
             return res.status(fbResponse.status).json({ error: 'FB CAPI error', details: fbResult });
         }
 

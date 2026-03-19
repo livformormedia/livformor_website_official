@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 // ─── Constants ─────────────────────────────────────────────
-const LOGO_URL = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/b6fc53ddd_LivForMorMediaLogo.png';
+const LOGO_URL = '/images/LivForMorMediaLogo.png';
 const FOUNDER_IMAGE = '/oriel-founder.jpg';
 
 const BRAND = {
@@ -419,6 +419,8 @@ function AssessmentModal({ isOpen, onClose }) {
         email: '',
         phone: '',
         website: '',
+        clinicName: '',
+        cityState: '',
         smsConsent: false,
     });
 
@@ -557,12 +559,29 @@ function AssessmentModal({ isOpen, onClose }) {
 
         // 4. Trigger Native Research Engine (fire-and-forget)
         // Don't await — let it run in the background so the user redirects immediately.
-        fetch('https://yrfobzuiqcuhylstiukn.supabase.co/functions/v1/generate-research-report', {
+        fetch('/api/generate-blueprint', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
             keepalive: true,  // ensures the request completes even after navigation
         }).catch(err => console.error("Research trigger error", err));
+
+        // 5. Queue for deep dashboard generation (NotebookLM via local listener)
+        fetch('https://yrfobzuiqcuhylstiukn.supabase.co/functions/v1/queue-dashboard', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                clinic_name: formData.clinicName || `${formData.firstName} ${formData.lastName}`.trim(),
+                clinic_domain: formData.website,
+                services: formData.services,
+                city_state: formData.cityState || '',
+                contact_name: `${formData.firstName} ${formData.lastName}`.trim(),
+                contact_email: formData.email,
+                monthly_budget: formData.monthlyBudget,
+                team_structure: formData.teamStructure,
+            }),
+            keepalive: true,
+        }).catch(err => console.error("Dashboard queue error", err));
 
         setIsSubmitting(false);
         onClose();
@@ -759,9 +778,22 @@ function AssessmentModal({ isOpen, onClose }) {
                                 </div>
 
                                 <div>
-                                    <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: '#374151', marginBottom: 6 }}>Practice Website</label>
-                                    <input type="text" value={formData.website} placeholder="www.yourclinic.com"
-                                        onChange={e => handleChange('website', e.target.value)} style={inputStyle} />
+                                    <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: '#374151', marginBottom: 6 }}>Clinic Name *</label>
+                                    <input type="text" value={formData.clinicName} required
+                                        onChange={e => handleChange('clinicName', e.target.value)} style={inputStyle} placeholder="e.g. Clarity Ketamine" />
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: '#374151', marginBottom: 6 }}>Practice Website</label>
+                                        <input type="text" value={formData.website} placeholder="www.yourclinic.com"
+                                            onChange={e => handleChange('website', e.target.value)} style={inputStyle} />
+                                    </div>
+                                    <div>
+                                        <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: '#374151', marginBottom: 6 }}>City & State *</label>
+                                        <input type="text" value={formData.cityState} required
+                                            onChange={e => handleChange('cityState', e.target.value)} style={inputStyle} placeholder="e.g. Austin, TX" />
+                                    </div>
                                 </div>
 
                                 <div>

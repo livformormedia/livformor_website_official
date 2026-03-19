@@ -8,7 +8,7 @@ export default function FounderSection() {
     {
       name: 'Oriel Mor',
       role: 'Founder & CEO',
-      image: 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/687b95cb6d123a0324ad6637/c45d6010d_WhatsAppImage2025-12-08at124721.jpg',
+      image: '/images/oriel-mor.jpg',
       bio: 'After managing over $1M in paid campaigns and spending 6 years in sales and advertising, Oriel shifted his focus to helping mental health clinics grow ethically and sustainably.',
       specialty: 'Marketing & Strategy'
     }
