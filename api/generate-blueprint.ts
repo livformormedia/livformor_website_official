@@ -316,7 +316,7 @@ async function extractLocationFromText(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "anthropic/claude-haiku-4-5-20251001",
+      model: "anthropic/claude-haiku-4.5",
       max_tokens: 50,
       messages: [
         {
@@ -526,7 +526,7 @@ INFERRED LOCATION: ${rawData.locationInfer}`;
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "anthropic/claude-haiku-4-5-20251001",
+      model: "anthropic/claude-haiku-4.5",
       max_tokens: 4096,
       messages: [
         {
@@ -829,7 +829,7 @@ async function runWriterPass(
       "X-Title": "LivForMor Patient Acquisition Blueprint",
     },
     body: JSON.stringify({
-      model: "anthropic/claude-sonnet-4-20250514",
+      model: "anthropic/claude-sonnet-4",
       max_tokens: 8192,
       messages: [
         { role: "system", content: systemPrompt },
