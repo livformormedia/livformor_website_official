@@ -1,11 +1,10 @@
-// Blueprint Generation API Route — Vercel Serverless Function
-// Migrated from Supabase Edge Function for 300s timeout (Pro plan)
-// Pipeline: Website scrape + PageSpeed + Competitors + Ad Library + Claude → Supabase Storage
+// Blueprint Generation API Route v2 — Two-Pass Architecture
+// Pipeline: Scrape → Analyst (Haiku JSON brief) → Validate → Writer (Sonnet) → Upload
+// Vercel Serverless Function with 300s max duration
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
-// Vercel Pro: allow up to 300 seconds for the full pipeline
 export const config = {
   maxDuration: 300,
 };
@@ -18,15 +17,13 @@ async function resolveRedirects(url: string): Promise<string> {
     const res = await fetch(url, { method: 'HEAD', redirect: 'follow' });
     return res.url || url;
   } catch {
-    // If HEAD fails, try GET
     try {
       const res = await fetch(url, { redirect: 'follow' });
       const finalUrl = res.url || url;
-      // Consume the body to avoid memory leaks
       await res.text().catch(() => {});
       return finalUrl;
     } catch {
-      return url; // Fall back to original URL
+      return url;
     }
   }
 }
@@ -88,7 +85,31 @@ async function extractWebsiteText(url: string, apifyToken: string): Promise<stri
     return combined.substring(0, 15000);
   } catch (err) {
     console.error("Apify website-content-crawler error:", err);
-    return `Website extraction failed: ${(err as Error).message}`;
+
+    // Fallback: direct fetch with HTML stripping
+    try {
+      console.log("Falling back to direct fetch...");
+      const res = await fetch(url, {
+        headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" },
+      });
+      if (!res.ok) return `Website extraction failed: ${(err as Error).message}`;
+      let html = await res.text();
+      html = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "");
+      html = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
+      html = html.replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, "");
+      html = html.replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, "");
+      html = html.replace(/<header[^>]*>[\s\S]*?<\/header>/gi, "");
+      html = html.replace(/<[^>]+>/g, " ");
+      html = html.replace(/\s+/g, " ").trim();
+      const fallbackText = html.substring(0, 15000);
+      if (fallbackText.length > 500) {
+        console.log(`✅ Fallback extracted ${fallbackText.length} chars`);
+        return fallbackText;
+      }
+      return `Website extraction failed: ${(err as Error).message}`;
+    } catch {
+      return `Website extraction failed: ${(err as Error).message}`;
+    }
   }
 }
 
@@ -318,30 +339,537 @@ async function extractLocationFromText(
 }
 
 // ---------------------------------------------------------------------------
+// PASS 1: Analyst — Structured JSON brief from raw data (Claude Haiku)
+// ---------------------------------------------------------------------------
+interface AnalystBrief {
+  clinic_name: string;
+  contact_first_name: string;
+  contact_last_name: string;
+  city: string;
+  state: string;
+  report_type: "exomind" | "standard";
+  data_quality: "full" | "partial" | "thin";
+  data_gaps: string[];
+  website_url: string;
+  services: string[];
+  website_analysis: {
+    trust_grade: string;
+    trust_strengths: string[];
+    trust_weaknesses: string[];
+    speed_grade: string;
+    speed_metrics: {
+      speedIndex: string;
+      perfScore: number;
+      fcp: string;
+      lcp: string;
+      seoScore: number;
+    };
+    bleeding_neck: boolean;
+    seo_grade: string;
+    seo_strengths: string[];
+    seo_weaknesses: string[];
+    cta_grade: string;
+    cta_strengths: string[];
+    cta_weaknesses: string[];
+    critical_fix: string;
+    key_website_features: string[];
+  };
+  competitors: Array<{
+    name: string;
+    type: string;
+    rating: number;
+    reviews: number;
+    address: string;
+    weakness: string;
+    same_state: boolean;
+  }>;
+  ad_status: "zero_ads" | "active_ads" | "no_facebook_page" | "scrape_failed";
+  ad_count: number;
+  ad_details: Array<{
+    format: string;
+    hook: string;
+    cta: string;
+    platform: string;
+    analysis: string;
+  }>;
+  revenue_calc: {
+    service_type: string;
+    avg_patient_value: number;
+    monthly_target_patients: number;
+    monthly_revenue: number;
+    daily_loss: number;
+  };
+  market_insights: string[];
+  positioning_opportunities: string[];
+}
+
+async function runAnalystPass(
+  rawData: {
+    firstName: string;
+    lastName: string;
+    website: string;
+    services: string[];
+    cityState: string;
+    clinicOperational: string;
+    monthlyBudget: string;
+    teamStructure: string;
+    websiteData: string;
+    pageSpeedData: string;
+    competitorsData: string;
+    adLibraryData: string;
+    locationInfer: string;
+    isExoMind: boolean;
+  },
+  openrouterKey: string
+): Promise<AnalystBrief> {
+  console.log("🔬 Pass 1: Running Analyst (Claude Haiku)...");
+
+  const analystPrompt = `You are a data analyst. Your job is to extract structured findings from raw marketing research data. Output ONLY valid JSON — no markdown, no explanation, no code fences.
+
+Analyze ALL the data below and produce a JSON object with these exact fields:
+
+{
+  "clinic_name": "extracted from website data or use firstName + lastName's clinic",
+  "contact_first_name": "${rawData.firstName}",
+  "contact_last_name": "${rawData.lastName}",
+  "city": "extracted city name — NEVER output UNKNOWN, empty string, or placeholder. Extract from cityState, website content, competitor addresses, or phone area codes",
+  "state": "two-letter state code",
+  "report_type": "${rawData.isExoMind ? 'exomind' : 'standard'}",
+  "data_quality": "full if city+competitors+website+speed all present, partial if 1-2 missing, thin if 3+ missing",
+  "data_gaps": ["list of what's missing, e.g. 'no_competitors', 'no_facebook_page', 'no_speed_data', 'no_city'"],
+  "website_url": "${rawData.website}",
+  "services": ${JSON.stringify(rawData.services)},
+  "website_analysis": {
+    "trust_grade": "A-F letter grade",
+    "trust_strengths": ["specific things found in the scraped data that build trust"],
+    "trust_weaknesses": ["specific things missing or weak — ONLY flag as missing if genuinely not in the data"],
+    "speed_grade": "A-F based on perfScore: A=90+, B=70-89, C=50-69, D=30-49, F=<30",
+    "speed_metrics": {
+      "speedIndex": "exact value from data or 'unavailable'",
+      "perfScore": 0,
+      "fcp": "exact value from data or 'unavailable'",
+      "lcp": "exact value from data or 'unavailable'",
+      "seoScore": 0
+    },
+    "bleeding_neck": true if speedIndex > 2.5s,
+    "seo_grade": "A-F letter grade",
+    "seo_strengths": ["specific SEO strengths found"],
+    "seo_weaknesses": ["specific SEO gaps"],
+    "cta_grade": "A-F letter grade — for ExoMind reports, grade as 'executive_positioning' instead",
+    "cta_strengths": ["specific CTA/positioning strengths"],
+    "cta_weaknesses": ["specific CTA/positioning weaknesses"],
+    "critical_fix": "the single most impactful thing to fix today",
+    "key_website_features": ["list of notable things present on the site: team photos, testimonials, provider bios, service pages, etc."]
+  },
+  "competitors": [
+    {
+      "name": "competitor name",
+      "type": "what type of clinic/business",
+      "rating": 4.5,
+      "reviews": 100,
+      "address": "full address",
+      "weakness": "specific exploitable weakness from reviews or positioning",
+      "same_state": true/false
+    }
+  ],
+  "ad_status": "zero_ads or active_ads or no_facebook_page or scrape_failed",
+  "ad_count": 0,
+  "ad_details": [],
+  "revenue_calc": {
+    "service_type": "${rawData.isExoMind ? 'ExoMind' : rawData.services[0] || 'ketamine'}",
+    "avg_patient_value": ${rawData.isExoMind ? 4500 : 'calculate based on service: ketamine=3000, TMS=8000, Spravato=5000'},
+    "monthly_target_patients": ${rawData.isExoMind ? '10' : '15'},
+    "monthly_revenue": 0,
+    "daily_loss": 0
+  },
+  "market_insights": ["3-5 specific insights about their local market derived from the data"],
+  "positioning_opportunities": ["3-5 specific ways they can differentiate from competitors"]
+}
+
+RULES:
+- ONLY cite things present or absent in the ACTUAL DATA below. Do not invent.
+- For competitors, ONLY include businesses from the same state. Set same_state=false for others.
+- Revenue calculations: ExoMind avg=$4,500 (max 15 patients=$67,500/mo). Ketamine=$3,000. TMS=$8,000. Spravato=$5,000. Max 20 patients for standard.
+- Calculate daily_loss = avg_patient_value × 2 / 30 (2 missed patients per month).
+- If website features ARE present in the scraped data (team photos, testimonials, bios), list them in key_website_features.
+
+---
+RAW DATA:
+
+FORM SUBMISSION:
+Name: ${rawData.firstName} ${rawData.lastName}
+Website: ${rawData.website}
+Services: ${rawData.services.join(", ")}
+City/State provided: ${rawData.cityState}
+Clinic Operational: ${rawData.clinicOperational}
+Monthly Budget: ${rawData.monthlyBudget}
+Team Structure: ${rawData.teamStructure}
+
+SCRAPED WEBSITE CONTENT:
+${rawData.websiteData.substring(0, 12000)}
+
+TECHNICAL AUDIT (PageSpeed):
+${rawData.pageSpeedData}
+
+LOCAL COMPETITORS (Google Maps):
+${rawData.competitorsData}
+
+META AD LIBRARY:
+${rawData.adLibraryData}
+
+INFERRED LOCATION: ${rawData.locationInfer}`;
+
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${openrouterKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "anthropic/claude-haiku-4",
+      max_tokens: 4096,
+      messages: [
+        {
+          role: "system",
+          content: "You are a structured data analyst. Output ONLY valid JSON. No markdown fences, no explanation text. Just the JSON object.",
+        },
+        { role: "user", content: analystPrompt },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Analyst pass failed: ${errText}`);
+  }
+
+  const data = await res.json();
+  let content: string = data.choices?.[0]?.message?.content ?? "{}";
+
+  // Strip any accidental markdown fences
+  content = content.replace(/^```(?:json)?\n?/i, "").replace(/\n?```$/i, "").trim();
+
+  const brief: AnalystBrief = JSON.parse(content);
+  console.log(`✅ Analyst brief: data_quality=${brief.data_quality}, city=${brief.city}, competitors=${brief.competitors?.length || 0}, ad_status=${brief.ad_status}`);
+  return brief;
+}
+
+// ---------------------------------------------------------------------------
+// VALIDATION: Check the analyst brief for critical gaps
+// ---------------------------------------------------------------------------
+function validateBrief(brief: AnalystBrief): AnalystBrief {
+  console.log("🔍 Validating analyst brief...");
+  const gaps: string[] = [...(brief.data_gaps || [])];
+
+  if (!brief.city || brief.city === "UNKNOWN" || brief.city.length < 2) {
+    gaps.push("no_city");
+  }
+  if (!brief.competitors || brief.competitors.length === 0) {
+    gaps.push("no_competitors");
+  }
+  const sameStateCompetitors = (brief.competitors || []).filter(c => c.same_state);
+  if (sameStateCompetitors.length === 0 && brief.competitors?.length > 0) {
+    gaps.push("no_same_state_competitors");
+  }
+  if (brief.website_analysis?.speed_metrics?.perfScore === 0 && brief.website_analysis?.speed_metrics?.speedIndex === "unavailable") {
+    gaps.push("no_speed_data");
+  }
+  if (brief.ad_status === "no_facebook_page" || brief.ad_status === "scrape_failed") {
+    gaps.push("no_ad_data");
+  }
+
+  // Deduplicate
+  brief.data_gaps = [...new Set(gaps)];
+
+  // Recalculate data_quality based on validated gaps
+  const criticalGaps = brief.data_gaps.filter(g => ["no_city", "no_competitors", "no_speed_data"].includes(g));
+  if (criticalGaps.length >= 3) {
+    brief.data_quality = "thin";
+  } else if (criticalGaps.length >= 1) {
+    brief.data_quality = "partial";
+  } else {
+    brief.data_quality = "full";
+  }
+
+  // Ensure revenue calc is populated
+  if (!brief.revenue_calc.monthly_revenue) {
+    brief.revenue_calc.monthly_revenue = brief.revenue_calc.avg_patient_value * brief.revenue_calc.monthly_target_patients;
+  }
+  if (!brief.revenue_calc.daily_loss) {
+    brief.revenue_calc.daily_loss = Math.round((brief.revenue_calc.avg_patient_value * 2) / 30);
+  }
+
+  console.log(`✅ Validation complete: data_quality=${brief.data_quality}, gaps=[${brief.data_gaps.join(", ")}]`);
+  return brief;
+}
+
+// ---------------------------------------------------------------------------
+// PASS 2: Writer — Generate the markdown report from the brief (Claude Sonnet)
+// ---------------------------------------------------------------------------
+function buildExoMindSystemPrompt(): string {
+  return `You are an elite performance marketing strategist writing for LivForMor Media — the #1 patient acquisition agency for premium brain optimization clinics.
+
+You write "ExoMind Market Intelligence Reports" — personalized competitive analyses that make clinic owners' jaws drop. You are direct, data-precise, and never generic.
+
+IDENTITY & VOICE:
+- Direct and confident — never hedging, never vague
+- Data-precise — always reference specific numbers from the brief
+- Mission-driven — tie marketing back to patient outcomes
+- Anti-agency-speak — no "leverage synergies" or "optimize touchpoints"
+- Conversational authority — like a peer who has seen the data
+- Short paragraphs (2-3 sentences max). Active voice. No hedging qualifiers.
+
+CRITICAL CONTEXT:
+ExoMind is a premium, FDA-cleared neurostimulation protocol targeting high-performing individuals — CEOs, executives, founders, professionals who want cognitive optimization. ExoMind patients are cash-pay ($3,000–$6,000 per protocol). They are NOT the same audience as ketamine or TMS patients. NEVER compare to ketamine/TMS/Spravato providers.
+
+STRICT RULES:
+1. NEVER mention any clinic name, city, or state not in the brief data.
+2. NEVER write sales pitches for LivForMor. No "strategy call", "packages", pricing for our services.
+3. NEVER claim website content is missing if the brief lists it in key_website_features.
+4. BANNED TERMS: "lookalike audience", "interest targeting", "custom audience", "detailed targeting" — Meta uses Advantage+ now.
+5. ExoMind competitors: neurofeedback clinics, brain optimization centers, executive wellness, biohacking, cognitive performance clinics. NEVER compare to ketamine/TMS/Spravato.
+6. If the brief flags data gaps, write around them gracefully using market-level insights. Never use "[your city]" placeholders. Never say "unable to verify" or "data limitation".
+7. REVENUE GUARDRAIL: ExoMind avg = $4,500. Max projection = 15 patients × $4,500 = $67,500/month. Use the exact numbers from the brief's revenue_calc.
+
+DESIGN TOKENS (for any inline styling references):
+- Dark: #0d3b40 | Teal: #0f766e | Gold: #c5b896
+- Font: Nunito Sans
+- Grade badges: Green for A/B, Yellow for C, Red for D/F
+
+FORMATTING:
+- Clean, scannable markdown. Short paragraphs.
+- Single-level bullets only.
+- Blockquotes (> ) for key insights and opportunity callouts.
+- ### headings for sub-sections. --- between major sections.
+- **bold** for emphasis, never ALL CAPS.
+- Tables for structured comparisons only.`;
+}
+
+function buildStandardSystemPrompt(): string {
+  return `You are an elite direct-response healthcare marketer writing for LivForMor Media — the #1 patient acquisition agency for ketamine, TMS, and Spravato clinics.
+
+You write "Patient Acquisition Blueprints" — personalized battle plans that make clinic owners' jaws drop. You apply the principles of Eugene Schwartz (market sophistication), Gary Halbert (emotional triggers), and Gary Bencivenga (proof-driven persuasion).
+
+IDENTITY & VOICE:
+- Direct and confident — never hedging, never vague
+- Data-precise — always reference specific numbers from the brief
+- Mission-driven — tie marketing back to patient outcomes
+- Anti-agency-speak — no "leverage synergies" or "optimize touchpoints"
+- Conversational authority — like a peer who has seen the data
+- Short paragraphs (2-3 sentences max). Active voice. No hedging qualifiers.
+
+STRICT RULES:
+1. NEVER mention any clinic name, city, or state not in the brief data.
+2. NEVER write sales pitches for LivForMor. No "strategy call", "packages", pricing for our services.
+3. NEVER claim website content is missing if the brief lists it in key_website_features.
+4. BANNED TERMS: "lookalike audience", "interest targeting", "custom audience", "detailed targeting" — Meta uses Advantage+ now.
+5. If the brief flags data gaps, write around them gracefully using market-level insights. Never use "[your city]" placeholders. Never say "unable to verify" or "data limitation".
+6. REVENUE GUARDRAIL: Ketamine=$3,000, TMS=$8,000, Spravato=$5,000 per patient. Max 20 new patients/month. Use the exact numbers from the brief's revenue_calc.
+
+DESIGN TOKENS (for any inline styling references):
+- Dark: #0d3b40 | Teal: #0f766e | Gold: #c5b896
+- Font: Nunito Sans
+- Grade badges: Green for A/B, Yellow for C, Red for D/F
+
+FORMATTING:
+- Clean, scannable markdown. Short paragraphs.
+- Single-level bullets only.
+- Blockquotes (> ) for key insights and opportunity callouts.
+- ### headings for sub-sections. --- between major sections.
+- **bold** for emphasis, never ALL CAPS.
+- Tables for structured comparisons only.`;
+}
+
+function buildWriterUserPrompt(brief: AnalystBrief): string {
+  const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const isExoMind = brief.report_type === "exomind";
+  const title = isExoMind ? "ExoMind Market Intelligence Report" : "Patient Acquisition Blueprint";
+  const sameStateCompetitors = brief.competitors.filter(c => c.same_state);
+
+  // Build competitor table rows
+  const competitorRows = sameStateCompetitors.map(c =>
+    isExoMind
+      ? `| ${c.name} | ${c.type} | ${c.rating}⭐ | ${c.reviews} | ${c.weakness} |`
+      : `| ${c.name} | ${c.rating}⭐ | ${c.reviews} | ${c.weakness} | Position against: ${c.weakness} |`
+  ).join("\n");
+
+  const hasCompetitors = sameStateCompetitors.length > 0;
+  const hasCity = brief.city && brief.city !== "UNKNOWN" && brief.city.length > 1;
+
+  return `CURRENT DATE: ${currentDate}
+
+Here is the validated analyst brief. Write the full report using ONLY this data. Every claim must trace back to a field in this brief.
+
+ANALYST BRIEF:
+${JSON.stringify(brief, null, 2)}
+
+---
+
+Write the complete report in markdown. Follow this exact structure:
+
+# ${title}
+## Prepared by LivForMor Media | Exclusively for ${brief.contact_first_name} ${brief.contact_last_name}
+
+---
+
+## 1. 🔍 Executive Summary & Market Opportunity
+
+Write 3-4 paragraphs:
+- Total addressable market ${hasCity ? `in ${brief.city}, ${brief.state}` : 'in their local market'} ${isExoMind ? '— focus on executive/professional demographic' : '— patient count + revenue opportunity'}
+- Revenue gap using EXACT numbers from brief.revenue_calc: ${brief.revenue_calc.monthly_target_patients} patients × $${brief.revenue_calc.avg_patient_value} = $${brief.revenue_calc.monthly_revenue}/month
+- The #1 barrier from brief.website_analysis.critical_fix
+- Use a blockquote with the revenue number
+
+---
+
+## 2. ⚠️ Website Teardown: What's Leaking ${isExoMind ? 'High-Value ' : ''}Patients${isExoMind ? '' : ' & Revenue'}
+
+Grade on 4 dimensions using EXACT data from the brief. For each:
+
+### ${isExoMind ? 'Trust & Authority' : 'Trust'}: ${brief.website_analysis.trust_grade}
+- Reference brief.website_analysis.trust_strengths and trust_weaknesses
+- **What's Working:** ${brief.website_analysis.trust_strengths.join(', ')}
+- **What's Broken:** ${brief.website_analysis.trust_weaknesses.join(', ')}
+- **Fix It Now:** single most impactful action
+
+### Speed: ${brief.website_analysis.speed_grade}
+- **Mobile Load Time:** ${brief.website_analysis.speed_metrics.speedIndex}
+- **Performance Score:** ${brief.website_analysis.speed_metrics.perfScore}/100
+- **First Contentful Paint:** ${brief.website_analysis.speed_metrics.fcp}
+- **Largest Contentful Paint:** ${brief.website_analysis.speed_metrics.lcp}
+${brief.website_analysis.bleeding_neck ? '- FLAG AS BLEEDING NECK: 53% bounce rate for pages >3s. Half of paid traffic is wasted.' : ''}
+
+### ${isExoMind ? 'SEO & Discoverability' : 'SEO'}: ${brief.website_analysis.seo_grade}
+- Use brief.website_analysis.seo_strengths and seo_weaknesses
+
+### ${isExoMind ? 'Executive-Ready Positioning' : 'CTA Effectiveness'}: ${brief.website_analysis.cta_grade}
+- Use brief.website_analysis.cta_strengths and cta_weaknesses
+
+### 🚨 The #1 Critical Fix for Today
+${brief.website_analysis.critical_fix}
+
+---
+
+## 3. 🏆 ${isExoMind ? 'Competitive Landscape & Ad Intelligence' : 'Competitor Intelligence & Ad X-Ray'}
+
+### Their Current Ad Strategy
+- Ad status: ${brief.ad_status}, count: ${brief.ad_count}
+${brief.ad_status === 'zero_ads' || brief.ad_status === 'no_facebook_page'
+  ? '- State: "Zero Active Ad Spend Detected on Meta. You are currently entirely reliant on organic referrals and handing local market share directly to aggressive competitors."'
+  : '- Analyze each ad from brief.ad_details'}
+
+### ${hasCompetitors ? 'Local Competitive Landscape' : 'Market Landscape'}
+${hasCompetitors ? `
+${isExoMind
+  ? '| Competitor | Type | Rating | Reviews | Exploitable Weakness |\n|---|---|---|---|---|\n' + competitorRows
+  : '| Clinic Name | Rating | Reviews | Critical Weakness | How to Steal Their Patients |\n|---|---|---|---|---|\n' + competitorRows}
+` : 'Analyze the national competitive landscape for their service type. Focus on positioning opportunities from brief.positioning_opportunities.'}
+
+Write 2-3 blockquote callouts using brief.positioning_opportunities
+
+---
+
+## 4. 🗺️ ${isExoMind ? 'The ExoMind Patient Acquisition Blueprint (60-Day Plan)' : 'The Patient Acquisition Blueprint (60-Day Quick Win Plan)'}
+
+### Week 1-2: ${isExoMind ? 'Premium Positioning & Quick Wins' : 'Foundation & Quick Wins'} (Zero Ad Spend)
+5-7 specific actions tailored to their clinic and market
+
+### Week 3-${isExoMind ? '6' : '4'}: Paid Traffic Launch
+
+${isExoMind ? `#### Native Advertising (Taboola/Outbrain)
+Table with 4 personas targeting executives/professionals reading Forbes, Bloomberg, WSJ
+
+#### Meta Ads — Advantage+ Strategy
+Transformation stories from high-performers, NOT clinical depression narratives
+
+#### Google Ads — High-Intent Search
+Target ExoMind, neurofeedback, brain optimization + ${hasCity ? brief.city : 'their city'} keywords`
+: `#### Meta Ads — Advantage+ Strategy
+Education-first storytelling. Include persona table:
+| Patient Condition | Ad Angle | Sample Hook | CTA |
+Cover: Treatment-Resistant Depression, Postpartum, PTSD, OCD, Anxiety, Chronic Pain
+
+#### Google Ads — High-Intent Search
+High-intent keywords + dedicated landing page with pre-indoctrination sequence`}
+
+### Week 5-8: ${isExoMind ? 'Executive Referral Network & Nurture' : 'Patient Nurture & Reactivation'}
+Email sequences, retargeting, referral network specifics
+
+### KPIs & Success Metrics
+Targets at Week 2, Week 4, and Week 8
+
+---
+
+## 5. 🚀 The Cost of Waiting
+- Daily revenue loss: $${brief.revenue_calc.daily_loss}/day based on ${brief.revenue_calc.avg_patient_value} per patient
+- Reference one competitor vulnerability
+- End with EXACTLY this text and NOTHING after it:
+
+"Every day you wait is another day your competitors capture the patients who should be yours. For more in-depth strategies, breakdowns, and patient acquisition playbooks, watch our training videos on YouTube: https://www.youtube.com/@orielmor-livformormedia"`;
+}
+
+async function runWriterPass(
+  brief: AnalystBrief,
+  openrouterKey: string
+): Promise<string> {
+  console.log("✍️  Pass 2: Running Writer (Claude Sonnet 4)...");
+
+  const systemPrompt = brief.report_type === "exomind"
+    ? buildExoMindSystemPrompt()
+    : buildStandardSystemPrompt();
+
+  const userPrompt = buildWriterUserPrompt(brief);
+
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${openrouterKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://livformor.com",
+      "X-Title": "LivForMor Patient Acquisition Blueprint",
+    },
+    body: JSON.stringify({
+      model: "anthropic/claude-sonnet-4",
+      max_tokens: 8192,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Writer pass failed: ${errText}`);
+  }
+
+  const data = await res.json();
+  let content: string = data.choices?.[0]?.message?.content ?? "";
+
+  // Strip accidental markdown code fence wrappers
+  content = content.replace(/^```(?:markdown|md)?\n?/i, "").replace(/\n?```$/i, "").trim();
+
+  console.log(`✅ Writer produced ${content.length} chars`);
+  return content;
+}
+
+// ---------------------------------------------------------------------------
 // Main handler — Vercel Serverless Function
 // ---------------------------------------------------------------------------
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    // Defensive: handle both object body (application/json) and string body (text/plain)
     let payload = req.body || {};
     if (typeof payload === 'string') {
       try { payload = JSON.parse(payload); } catch { payload = {}; }
     }
 
-    // Support both direct frontend payload and GHL Webhook structure
     const firstName = payload.firstName || payload.first_name || "Doctor";
     const lastName = payload.lastName || payload.last_name || "";
     const email = payload.email || "";
@@ -353,7 +881,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const contactId = payload.contact_id || payload.id || null;
     const cityState = payload.cityState || payload.city_state || "";
 
-    console.log(`🚀 Starting Research Pipeline: ${firstName} ${lastName} — ${website}`);
+    console.log(`🚀 Blueprint v2 Pipeline: ${firstName} ${lastName} — ${website}`);
 
     // ----- API Keys -----
     const apifyKey = process.env.APIFY_API_TOKEN || "";
@@ -372,13 +900,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     let adLibraryData = "No Meta Ad Library data available.";
     let locationInfer = cityState || "";
 
-    // ------------------------------------------------------------------
+    // ==================================================================
     // PHASE 1: Website Extraction via Apify + PageSpeed (parallel)
-    // ------------------------------------------------------------------
+    // ==================================================================
     if (website) {
       const rawUrl = website.startsWith("http") ? website : `https://${website}`;
-
-      // Resolve redirects first so PageSpeed gets the final URL
       console.log(`🔗 Resolving redirects for: ${rawUrl}`);
       const targetUrl = await resolveRedirects(rawUrl);
       console.log(`🔗 Final URL: ${targetUrl}`);
@@ -416,16 +942,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         let bleedingNeck = "";
         const loadTimeSecs = parseFloat(speedIndex);
         if (!isNaN(loadTimeSecs) && loadTimeSecs > 2.5) {
-          bleedingNeck = `\n⚠️ BLEEDING NECK: Mobile load time is ${speedIndex} — over the 2.5s threshold. Every dollar spent on Meta ads is partially wasted because visitors bounce before the page even loads. At a 53% bounce rate (Google's measured rate for pages >3s), roughly HALF of all paid traffic is leaving without seeing the offer.`;
+          bleedingNeck = `\n⚠️ BLEEDING NECK: Mobile load time is ${speedIndex} — over 2.5s threshold.`;
         }
 
         pageSpeedData = `Mobile Performance Score: ${perfScore}/100\nMobile SEO Score: ${seoScore}/100\nMobile Load Time (Speed Index): ${speedIndex}\nFirst Contentful Paint: ${fcp}\nLargest Contentful Paint: ${lcp}${bleedingNeck}`;
-        console.log(`✅ PageSpeed: Perf ${perfScore}, SEO ${seoScore}, Speed Index ${speedIndex}, FCP ${fcp}, LCP ${lcp}`);
+        console.log(`✅ PageSpeed: Perf ${perfScore}, SEO ${seoScore}, Speed Index ${speedIndex}`);
       }
 
-      // ------------------------------------------------------------------
-      // PHASE 2: Location Extraction → Competitor Research via Apify Maps
-      // ------------------------------------------------------------------
+      // ==================================================================
+      // PHASE 2: Location Extraction → Competitor Research
+      // ==================================================================
       if (websiteData.length > 80) {
         if (!locationInfer) {
           console.log("⚙️  Phase 2: Extracting location via Claude Haiku 4...");
@@ -439,32 +965,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const isExoMind = services.some(s => s.toLowerCase().includes('exomind'));
 
           if (isExoMind) {
-            // ExoMind-specific competitor searches — neurofeedback & brain optimization landscape
-            console.log("🧠 ExoMind detected — searching for neurofeedback/brain optimization competitors...");
+            console.log("🧠 ExoMind detected — searching neurofeedback/brain optimization...");
             const exomindSearches = [
               `neurofeedback clinic near ${locationInfer}`,
               `brain optimization center near ${locationInfer}`,
               `executive wellness clinic near ${locationInfer}`,
             ];
-
             const searchResults = await Promise.allSettled(
               exomindSearches.map(q => {
                 console.log(`🔍 Google Maps search: "${q}"`);
                 return scrapeLocalCompetitors(q, apifyKey);
               })
             );
-
             const allResults = searchResults
               .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled" && r.value !== "No local competitors found via Google Maps.")
               .map(r => r.value);
-
             competitorsData = allResults.length > 0
               ? allResults.join("\n\n---\n\n")
               : "No local competitors found via Google Maps.";
-
-            console.log("✅ ExoMind competitor data gathered via Apify Google Maps.");
+            console.log("✅ ExoMind competitor data gathered.");
           } else {
-            // Standard ketamine/TMS/Spravato competitor search
             const serviceExpansions: Record<string, string> = {
               kap: "ketamine therapy",
               tms: "TMS therapy",
@@ -474,27 +994,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const searchQuery = `${expandedService} near ${locationInfer}`;
             console.log(`🔍 Google Maps search: "${searchQuery}"`);
             competitorsData = await scrapeLocalCompetitors(searchQuery, apifyKey);
-            console.log("✅ Competitor data gathered via Apify Google Maps.");
+            console.log("✅ Competitor data gathered.");
           }
         }
       }
     }
 
-    // ------------------------------------------------------------------
+    // ==================================================================
     // PHASE 2.5: Facebook Discovery + Meta Ad Library Scrape
-    // ------------------------------------------------------------------
+    // ==================================================================
     {
       const clinicName = `${firstName} ${lastName}`.trim();
       const cityForSearch = locationInfer || cityState || "";
-
-      console.log("⚙️  Phase 2.5: Facebook Discovery + Ad Library Scrape...");
-      const fbPage = await discoverFacebookPage(
-        websiteData,
-        clinicName,
-        cityForSearch,
-        apifyKey
-      );
-
+      console.log("⚙️  Phase 2.5: Facebook Discovery + Ad Library...");
+      const fbPage = await discoverFacebookPage(websiteData, clinicName, cityForSearch, apifyKey);
       if (fbPage) {
         adLibraryData = await scrapeMetaAdLibrary(fbPage, apifyKey);
         console.log(`✅ Ad Library data gathered for: ${fbPage}`);
@@ -504,416 +1017,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // ------------------------------------------------------------------
-    // PHASE 3: Generate Blueprint with Claude Sonnet 4
-    // ------------------------------------------------------------------
-    console.log("🧠  Phase 3: Generating Blueprint with Claude Sonnet 4...");
-
-    const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
     const isExoMind = services.some(s => s.toLowerCase().includes('exomind'));
 
-    const systemPrompt = isExoMind
-      ? // ================================================================
-        // EXOMIND-SPECIFIC BLUEPRINT PROMPT
-        // ================================================================
-        `You are an elite performance marketing strategist working for LivForMor Media — the #1 patient acquisition agency for premium brain optimization clinics.
-
-Your mission: Write a high-impact "ExoMind Market Intelligence Report" that will make the clinic owner's jaw drop. This is not a generic report — it is a PERSONALIZED COMPETITIVE ANALYSIS built entirely from the real data provided below.
-
-CRITICAL CONTEXT: ExoMind is a premium, FDA-cleared neurostimulation protocol that targets high-performing individuals — CEOs, executives, founders, and professionals who want cognitive optimization, not just mental health treatment. ExoMind patients are cash-pay ($3,000–$6,000 per protocol). They are NOT the same audience as ketamine or TMS patients. Do NOT compare this clinic to ketamine or TMS providers — those are NOT competitors.
-
-CURRENT DATE: ${currentDate}
-
-## STRICT RULES:
-1. NEVER mention any clinic name, city, or state that was not provided in the CLINIC OWNER DATA.
-2. If competitor data contains businesses from other states, IGNORE them completely.
-3. NEVER write anything that sounds like a sales pitch for LivForMor.
-4. NEVER mention "livformor", "strategy call", "options", "packages", pricing, or dollar amounts for our services.
-5. NEVER include a "book a call" or "strategy session" call to action.
-6. NEVER claim that website content is missing if the SCRAPED DATA shows it IS present.
-7. All date references must use the CURRENT DATE provided above. Never reference past years or months.
-8. BANNED TERMS for Meta paid traffic: "lookalike audience", "interest targeting", "custom audience", "detailed targeting". Meta now uses Advantage+ AI-driven campaigns.
-9. ExoMind's TRUE competitors are: neurofeedback clinics, brain optimization centers, executive wellness programs, biohacking centers, and cognitive performance clinics. NEVER compare to ketamine, TMS, or Spravato clinics.
-10. NEVER use the phrases "unable to verify", "data limitation", "scraping limitations", "unable to access", "without complete content access", or "could not be verified". If data is thin or missing for a section, write your analysis based on whatever data IS available. If competitor data is unavailable, analyze the NATIONAL competitive landscape for their service type and provide actionable positioning advice. Never admit data gaps to the reader.
-11. REVENUE GUARDRAIL: ExoMind protocol value is $3,000–$6,000. NEVER cite patient values above $6,000. Use $4,500 as the average for all revenue calculations. Maximum reasonable monthly revenue projection = 15 patients × $4,500 = $67,500.
-
-Apply the copywriting principles of Eugene Schwartz (market sophistication), Gary Halbert (emotional triggers), and Gary Bencivenga (proof-driven persuasion). Every section must:
-- Reference SPECIFIC data from the website scrape or competitor research
-- Quantify the opportunity cost of inaction (money left on the table every day)
-- Use professional headers, bullet points, and bold text for scannability
-
----
-
-CLINIC OWNER DATA:
-Name: ${firstName} ${lastName}
-Email: ${email}
-Website: ${website}
-Services Offered: ${services.join(", ")}
-Clinic Status: ${clinicOperational}
-Monthly Marketing Budget: ${monthlyBudget}
-Team Structure: ${teamStructure}
-
-TECHNICAL AUDIT:
-${pageSpeedData}
-
-LOCAL NEUROFEEDBACK & BRAIN OPTIMIZATION COMPETITORS IN ${locationInfer || "their market"}:
-${competitorsData}
-
-META AD LIBRARY INTELLIGENCE:
-${adLibraryData}
-
-CLINIC WEBSITE CONTENT (Scraped):
-${websiteData.substring(0, 12000)}
-
----
-
-OUTPUT REQUIREMENTS — Write the full report in Markdown. Include ALL 5 sections below. Write comprehensive, specific content for each.
-
-FORMATTING RULES:
-- Keep markdown clean and scannable. Use short paragraphs (2-3 sentences max).
-- Use single-level bullets. Never nest more than one level deep.
-- Use blockquotes (> ) for key insights, opportunity callouts, and important data points.
-- Use ### headings for sub-sections within each section.
-- Use --- horizontal rules between major sections.
-- Use **bold** for emphasis, never ALL CAPS.
-- Use tables for structured comparisons only.
-
-# ExoMind Market Intelligence Report
-## Prepared by LivForMor Media | Exclusively for ${firstName} ${lastName}
-
----
-
-## 1. 🔍 Executive Summary & Market Opportunity
-
-Write 3-4 punchy paragraphs covering:
-- The total addressable market for brain optimization in their city — focus on the executive/professional demographic, NOT the general mental health population
-- The revenue opportunity: each ExoMind patient is worth $3,000–$6,000 per protocol. Calculate potential monthly revenue from 10-15 new patients using $4,500 as the average. Never project above $67,500/month.
-- The competitive landscape gap — most neurofeedback/brain optimization clinics in their market are poorly marketed and easily outpositioned
-
-Use a blockquote to highlight the single biggest number.
-
----
-
-## 2. ⚠️ Website Teardown: What's Leaking High-Value Patients
-
-Grade the website on 4 dimensions. For EACH grade, use this EXACT format:
-
-### Trust & Authority: [A-F grade]
-Does this website look like a premium brain optimization center that a CEO would trust with their cognition? Or does it look like a generic mental health clinic? Reference SPECIFIC elements from the website.
-- **What's Working:** bullet points of strengths (if any)
-- **What's Broken:** bullet points of weaknesses
-- **Fix It Now:** The single most impactful action
-
-### Speed: [A-F grade]
-Use the REAL data from the TECHNICAL AUDIT section above. Report the exact Mobile Load Time, Performance Score, FCP, and LCP — do NOT guess these numbers.
-- **Mobile Load Time:** [exact Speed Index value from data]
-- **Performance Score:** [exact score from data]/100
-- **First Contentful Paint:** [exact FCP from data]
-If the Speed Index is above 2.5 seconds, this is a "Bleeding Neck" — explain that executives will not wait for slow websites.
-- **What's Working:** any speed strengths
-- **What's Broken:** specific speed issues with exact numbers
-- **Fix It Now:** The single most impactful speed optimization
-
-### SEO & Discoverability: [A-F grade]
-(same structure — focus on whether they rank for "neurofeedback", "brain optimization", "ExoMind" + their city)
-
-### Executive-Ready Positioning: [A-F grade]
-Does the website speak to busy professionals and high-achievers, or does it read like a generic health clinic? Is the language aspirational (performance, edge, optimization) or clinical (treatment, disorder, symptoms)?
-- Grade based on whether an executive would see this and think "this is for me"
-
-After all 4 grades, add:
-### 🚨 The #1 Critical Fix for Today
-One paragraph describing the single most impactful change.
-
----
-
-## 3. 🏆 Competitive Landscape & Ad Intelligence
-
-Analyze the local neurofeedback/brain optimization market using the competitor data provided.
-
-### Their Current Ad Strategy
-- **Active Ad Count:** Report the exact number of active ads found. If ZERO_ADS, explain the opportunity: "You have ZERO paid ad presence. In a market where your competitors are [describe competitor ad activity], you are invisible to the highest-value patients searching for brain optimization."
-- **Creative Analysis:** If ads ARE running, analyze the messaging. Are they positioning as premium/executive or generic/clinical?
-
-### Local Competitive Landscape
-Show a table with ONLY competitors from the SAME STATE/REGION:
-
-| Competitor | Type | Rating | Reviews | Positioning | Exploitable Weakness |
-|---|---|---|---|---|---|
-
-After the table, write 2-3 blockquote callouts highlighting opportunities:
-> **Market Gap:** [Describe specific positioning gaps no competitor is filling — e.g., none of them target executives specifically, none have premium branding, etc.]
-
----
-
-## 4. 🗺️ The ExoMind Patient Acquisition Blueprint (60-Day Plan)
-
-### Week 1-2: Premium Positioning & Quick Wins (Zero Ad Spend)
-Bullet list of 5-7 actions specific to ExoMind: Google Business Profile optimization for brain optimization keywords, executive-focused website copy updates, LinkedIn authority content, case study development, partnership outreach to executive coaches / corporate wellness programs.
-
-### Week 3-4: Paid Traffic Launch
-
-#### Native Advertising (Taboola/Outbrain)
-ExoMind's ideal patients read Forbes, Bloomberg, WSJ, and Entrepreneur. Native ads that look like editorial content in these reading environments outperform social ads for this demographic. Include a table:
-
-| Target Persona | Ad Angle | Sample Headline | Landing Page |
-|---|---|---|---|
-| CEO with brain fog | Performance gap | "The protocol Silicon Valley execs use to stay sharp after 50" | VSL training page |
-| Founder burning out | Recovery without weakness | "Burnout is a brain problem, not a willpower problem" | Educational content |
-| Executive post-concussion | Transformation | "From forgetting meetings to running a $50M company" | Case study page |
-| Biohacker/optimizer | Science-first | "Why 6 ExoMind sessions outperform 40 neurofeedback sessions" | Comparison page |
-
-#### Meta Ads — Advantage+ Strategy
-Use Advantage+ campaigns. Focus on transformation stories from high-performers, NOT clinical depression narratives.
-
-#### Google Ads — High-Intent Search
-Target "ExoMind near me", "neurofeedback for executives", "brain optimization [city]", "cognitive performance clinic". These are premium-intent searches with high conversion potential.
-
-### Week 5-8: Executive Referral Network & Nurture
-LinkedIn outreach to executive coaches, corporate wellness departments. Email sequence focused on performance and ROI (not treatment/healing language). Retargeting ads for website visitors.
-
-### KPIs & Success Metrics
-Show targets at Week 2, Week 4, and Week 8.
-
----
-
-## 5. 🚀 The Cost of Waiting
-- Calculate the specific daily revenue they are losing. At $4,500 average patient value, every missed patient = $4,500 gone. Use conservative math.
-- Reference one competitor vulnerability that may close soon.
-- Then end the ENTIRE report with EXACTLY this text and ABSOLUTELY NOTHING after it:
-
-"Every day you wait is another day your competitors capture the patients who should be yours. For more in-depth strategies, breakdowns, and patient acquisition playbooks, watch our training videos on YouTube: https://www.youtube.com/@orielmor-livformormedia"
-
----
-END OF REPORT`
-      : // ================================================================
-        // STANDARD KETAMINE/TMS/SPRAVATO BLUEPRINT PROMPT (unchanged)
-        // ================================================================
-        `You are an elite, direct-response healthcare marketer and copywriter working for LivForMor Media — the #1 patient acquisition agency for ketamine, TMS, and Spravato clinics.
-
-Your mission: Write a high-impact "Patient Acquisition Blueprint" that will make the clinic owner's jaw drop. This is not a generic report — it is a PERSONALIZED BATTLE PLAN built entirely from the real data provided below.
-
-CURRENT DATE: ${currentDate}
-
-## STRICT RULES:
-1. NEVER mention any clinic name, city, or state that was not provided in the CLINIC OWNER DATA.
-2. If competitor data contains businesses from other states, IGNORE them completely.
-3. NEVER write anything that sounds like a sales pitch for LivForMor.
-4. NEVER mention "livformor", "strategy call", "options", "packages", pricing, or dollar amounts for our services.
-5. NEVER include a "book a call" or "strategy session" call to action.
-6. NEVER claim that website content is missing if the SCRAPED DATA shows it IS present. For example, if team photos or provider bios appear in the scraped data, do NOT say they are missing.
-7. All date references must use the CURRENT DATE provided above. Never reference past years or months.
-8. BANNED TERMS for Meta paid traffic: "lookalike audience", "interest targeting", "custom audience", "detailed targeting". Meta now uses Advantage+ AI-driven campaigns — advise accordingly.
-9. NEVER use the phrases "unable to verify", "data limitation", "scraping limitations", "unable to access", "without complete content access", or "could not be verified". If data is thin or missing for a section, write your analysis based on whatever data IS available. If competitor data is unavailable, analyze the NATIONAL competitive landscape for their service type and provide actionable positioning advice. Never admit data gaps to the reader.
-10. REVENUE GUARDRAIL: Ketamine patient protocol value is $2,500–$4,000 (6-session protocol). TMS patient value is $6,000–$12,000. Spravato patient value is $4,000–$8,000. NEVER cite individual patient values above these ranges. Use conservative averages for all revenue calculations ($3,000 for ketamine, $8,000 for TMS, $5,000 for Spravato). Maximum reasonable monthly revenue projection = 20 new patients × their service average.
-
-Apply the copywriting principles of Eugene Schwartz (market sophistication), Gary Halbert (emotional triggers), and Gary Bencivenga (proof-driven persuasion). Every section must:
-- Reference SPECIFIC data from the website scrape or competitor research
-- Quantify the opportunity cost of inaction (money left on the table every day)
-- Use professional headers, bullet points, and bold text for scannability
-
----
-
-CLINIC OWNER DATA:
-Name: ${firstName} ${lastName}
-Email: ${email}
-Website: ${website}
-Services Offered: ${services.join(", ")}
-Clinic Status: ${clinicOperational}
-Monthly Marketing Budget: ${monthlyBudget}
-Team Structure: ${teamStructure}
-
-TECHNICAL AUDIT:
-${pageSpeedData}
-
-LOCAL COMPETITORS IN ${locationInfer || "their market"}:
-${competitorsData}
-
-META AD LIBRARY INTELLIGENCE:
-${adLibraryData}
-
-CLINIC WEBSITE CONTENT (Scraped):
-${websiteData.substring(0, 12000)}
-
----
-
-OUTPUT REQUIREMENTS — Write the full report in Markdown. Include ALL 5 sections below. Write comprehensive, specific content for each.
-
-FORMATTING RULES:
-- Keep markdown clean and scannable. Use short paragraphs (2-3 sentences max).
-- Use single-level bullets. Never nest more than one level deep.
-- Use blockquotes (> ) for key insights, opportunity callouts, and important data points.
-- Use ### headings for sub-sections within each section.
-- Use --- horizontal rules between major sections.
-- Use **bold** for emphasis, never ALL CAPS.
-- Use tables for structured comparisons only.
-
-# Patient Acquisition Blueprint
-## Prepared by LivForMor Media | Exclusively for ${firstName} ${lastName}
-
----
-
-## 1. 🔍 Executive Summary & Market Opportunity
-
-Write 3-4 punchy paragraphs covering:
-- The total addressable market size in their city (patient count + revenue)
-- The realistic revenue gap — what they SHOULD be earning vs. what they likely are
-- The #1 barrier standing between them and 3-5x more patients
-
-Use a blockquote to highlight the single biggest number (e.g., > **You're leaving an estimated $X/month on the table.**)
-
----
-
-## 2. ⚠️ Website Teardown: What's Leaking Patients & Revenue
-
-Grade the website on 4 dimensions. For EACH grade, use this EXACT format:
-
-### Trust: [A-F grade]
-2-3 sentence explanation of why this grade was given, referencing SPECIFIC elements from their actual website.
-- **What's Working:** bullet points of strengths (if any)
-- **What's Broken:** bullet points of weaknesses
-- **Fix It Now:** The single most impactful action to improve this grade
-
-### Speed: [A-F grade]
-Use the REAL data from the TECHNICAL AUDIT section above. Report the exact Mobile Load Time, Performance Score, FCP, and LCP — do NOT guess or hallucinate these numbers. Format:
-- **Mobile Load Time:** [exact Speed Index value from data]
-- **Performance Score:** [exact score from data]/100
-- **First Contentful Paint:** [exact FCP from data]
-If the Speed Index is above 2.5 seconds, this is a "Bleeding Neck" — explain that they are paying for Meta traffic that bounces before the page loads. At Google's measured 53% bounce rate for pages over 3 seconds, roughly HALF of their paid clicks are wasted.
-- **What's Working:** any speed strengths (if score > 70)
-- **What's Broken:** specific speed issues with exact numbers from the audit
-- **Fix It Now:** The single most impactful speed optimization
-
-### SEO: [A-F grade]
-(same structure)
-
-### CTA Effectiveness: [A-F grade]
-(same structure)
-
-IMPORTANT: Only flag something as "missing" if you genuinely cannot find it in the SCRAPED WEBSITE DATA above. If team photos, provider bios, testimonials ARE present, acknowledge them as strengths under "What's Working."
-
-After all 4 grades, add:
-### 🚨 The #1 Critical Fix for Today
-One paragraph describing the single most impactful change they should make immediately.
-
----
-
-## 3. 🏆 Competitor Intelligence & Ad X-Ray
-
-First, analyze the clinic's OWN Meta ad activity using the META AD LIBRARY INTELLIGENCE data above:
-
-### Their Current Ad Strategy
-- **Active Ad Count:** Report the exact number of active ads found. If ZERO_ADS, state: "Zero Active Ad Spend Detected on Meta. You are currently entirely reliant on organic referrals and handing local market share directly to aggressive competitors."
-- **The Hook Analysis:** If ads ARE running, quote their exact ad copy. Point out if they are violating the Alpha Omega rule by selling a "commodity" (e.g., "Get 6 Ketamine Infusions for $X") instead of a "Proprietary Protocol" or unique transformation story.
-- **Creative Format:** Note whether they're running video, static images, or carousels. Video significantly outperforms static for healthcare.
-
-Then show the competitor table with ONLY competitors from the SAME STATE:
-
-| Clinic Name | Rating | Reviews | Critical Weakness | How to Steal Their Patients |
-|---|---|---|---|---|
-
-After the table, write 2-3 blockquote callouts highlighting the most exploitable competitor weaknesses:
-> **Exploitation Opportunity:** [Competitor X] has [specific weakness from reviews]. Position yourself as [counter-positioning].
-
----
-
-## 4. 🗺️ The Patient Acquisition Blueprint (60-Day Quick Win Plan)
-
-### Week 1-2: Foundation & Quick Wins (Zero Ad Spend)
-Bullet list of 5-7 specific, zero-cost actions: GBP optimization, review generation, website quick fixes. Frame everything around building a "Proprietary Protocol" — sell a named system, not a commodity treatment.
-
-### Week 3-4: Paid Traffic Launch
-
-#### Meta Ads — Advantage+ Strategy
-Use Advantage+ campaigns ONLY. Do NOT mention lookalike audiences, interest targeting, custom audiences, or detailed targeting — those are deprecated.
-
-Focus on EDUCATION-FIRST storytelling via story-format video ads. Include a table of diverse avatar creatives:
-
-| Patient Condition | Ad Angle | Sample Hook | CTA |
-|---|---|---|---|
-| Treatment-Resistant Depression | Patient transformation story | "I tried everything for 10 years..." | Book Free Consultation |
-| Postpartum Depression | Myth-busting / de-stigmatization | "You're not a bad mother..." | Learn More |
-| PTSD | Education-first / science | "Your brain isn't broken..." | Watch the Video |
-| OCD | Relatable metaphor | "Living with OCD feels like..." | Get Help Today |
-| Anxiety Disorders | Patient story / hope | "I couldn't leave my house..." | Schedule a Call |
-| Chronic Pain | De-stigmatization | "Pain isn't just physical..." | Start Your Journey |
-
-Focus on messaging and stories, NOT targeting mechanics. Let Meta's Andromeda AI handle targeting.
-
-#### Google Ads — High-Intent Search
-Search campaigns for high-intent keywords. Set up a dedicated landing page with a 3-video pre-indoctrination sequence to educate before the call.
-
-### Week 5-8: Patient Nurture & Reactivation
-Email sequences, SMS campaigns, retargeting ads. Describe the specific sequence.
-
-### KPIs & Success Metrics
-Show targets at Week 2, Week 4, and Week 8 as bullet points.
-
----
-
-## 5. 🚀 The Cost of Waiting
-- Calculate the specific daily revenue they are losing right now. Use the conservative per-service averages from the REVENUE GUARDRAIL rule above. Do NOT inflate these numbers.
-- Reference one competitor vulnerability that may close soon.
-- Then end the ENTIRE report with EXACTLY this text and ABSOLUTELY NOTHING after it — no P.S., no expiry notice, no additional paragraphs:
-
-"Every day you wait is another day your competitors capture the patients who should be yours. For more in-depth strategies, breakdowns, and patient acquisition playbooks, watch our training videos on YouTube: https://www.youtube.com/@orielmor-livformormedia"
-
----
-END OF REPORT`;
-
-    const claudeRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${openrouterKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://livformor.com",
-        "X-Title": "LivForMor Patient Acquisition Blueprint",
+    // ==================================================================
+    // PHASE 3: PASS 1 — Analyst Brief (Claude Haiku)
+    // ==================================================================
+    const brief = await runAnalystPass(
+      {
+        firstName, lastName, website, services, cityState,
+        clinicOperational, monthlyBudget, teamStructure,
+        websiteData, pageSpeedData, competitorsData, adLibraryData,
+        locationInfer, isExoMind,
       },
-      body: JSON.stringify({
-        model: "anthropic/claude-sonnet-4",
-        max_tokens: 4096,
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an elite direct-response marketing consultant for behavioral health clinics. Write with precision, authority, and specificity. Never be generic.",
-          },
-          {
-            role: "user",
-            content: systemPrompt,
-          },
-        ],
-      }),
-    });
+      openrouterKey
+    );
 
-    if (!claudeRes.ok) {
-      const errText = await claudeRes.text();
-      throw new Error(`OpenRouter / Claude API Error: ${errText}`);
-    }
+    // ==================================================================
+    // PHASE 3.5: Validate the brief
+    // ==================================================================
+    const validatedBrief = validateBrief(brief);
 
-    const claudeData = await claudeRes.json();
-    let markdownContent: string = claudeData.choices[0].message.content;
-
-    // Strip accidental markdown code fence wrappers
-    markdownContent = markdownContent
-      .replace(/^```(markdown|md)?\n/i, "")
-      .replace(/\n```$/i, "")
-      .trim();
-
+    // ==================================================================
+    // PHASE 4: PASS 2 — Writer (Claude Sonnet 4)
+    // ==================================================================
+    const markdownContent = await runWriterPass(validatedBrief, openrouterKey);
     console.log(`✅ Blueprint generated — ${markdownContent.length} chars`);
 
-    // ------------------------------------------------------------------
-    // PHASE 4: Upload Markdown to Supabase Storage
-    // ------------------------------------------------------------------
-    console.log("💾  Phase 4: Saving blueprint to Supabase Storage...");
-
+    // ==================================================================
+    // PHASE 5: Upload to Supabase Storage
+    // ==================================================================
+    console.log("💾  Phase 5: Saving to Supabase Storage...");
     if (!supabaseUrl || !supabaseServiceKey) {
       throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
     }
 
     const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
-
     const safeFirst = firstName.toLowerCase().replace(/[^a-z0-9]/g, "");
     const fileName = `blueprint_${Date.now()}_${safeFirst}.md`;
 
@@ -929,9 +1067,9 @@ END OF REPORT`;
     const documentUrl = `https://www.livformor.com/blueprint?file=${encodeURIComponent(fileName)}`;
     console.log(`🔗 Blueprint URL: ${documentUrl}`);
 
-    // ------------------------------------------------------------------
-    // PHASE 5: GoHighLevel CRM Handoff
-    // ------------------------------------------------------------------
+    // ==================================================================
+    // PHASE 6: GoHighLevel CRM Handoff
+    // ==================================================================
     if (ghlApiKey) {
       const ghlHeaders = {
         Authorization: `Bearer ${ghlApiKey}`,
@@ -942,7 +1080,7 @@ END OF REPORT`;
       let resolvedContactId = contactId;
       if (!resolvedContactId && email) {
         await new Promise((r) => setTimeout(r, 2000));
-        console.log(`🔍 Phase 5: Looking up GHL contact by email: ${email}...`);
+        console.log(`🔍 Phase 6: Looking up GHL contact by email: ${email}...`);
         try {
           const searchRes = await fetch(
             `https://services.leadconnectorhq.com/contacts/?locationId=MSFgME5t3cZZRgzhEnI2&query=${encodeURIComponent(email)}&limit=1`,
@@ -964,24 +1102,32 @@ END OF REPORT`;
       }
 
       if (resolvedContactId) {
-        console.log(`📤  Phase 5: Updating GHL contact ${resolvedContactId}...`);
+        console.log(`📤  Phase 6: Updating GHL contact ${resolvedContactId}...`);
         try {
           const clinicName = payload.clinicName || payload.clinic_name || "";
           const servicesStr = Array.isArray(services) ? services.join(", ") : String(services);
           const qualified = payload.qualified || "";
           const sourcePage = payload.source_page || payload.source || "";
 
+          // Build tags — add Blueprint_Thin_Data if data quality is thin
+          const tags = ["Report_Ready"];
+          if (validatedBrief.data_quality === "thin") {
+            tags.push("Blueprint_Thin_Data");
+          } else if (validatedBrief.data_quality === "partial") {
+            tags.push("Blueprint_Partial_Data");
+          }
+
           await Promise.all([
             fetch(`https://services.leadconnectorhq.com/contacts/${resolvedContactId}/tags`, {
               method: "POST",
               headers: ghlHeaders,
-              body: JSON.stringify({ tags: ["Report_Ready"] }),
+              body: JSON.stringify({ tags }),
             }),
             fetch(`https://services.leadconnectorhq.com/contacts/${resolvedContactId}/notes`, {
               method: "POST",
               headers: ghlHeaders,
               body: JSON.stringify({
-                body: `✅ Patient Acquisition Blueprint Ready!\n\nView Report: ${documentUrl}`,
+                body: `✅ Patient Acquisition Blueprint Ready! (v2 — data quality: ${validatedBrief.data_quality})\n\nView Report: ${documentUrl}\n\nData gaps: ${validatedBrief.data_gaps.length > 0 ? validatedBrief.data_gaps.join(", ") : "none"}`,
               }),
             }),
             fetch(`https://services.leadconnectorhq.com/contacts/${resolvedContactId}`, {
@@ -1002,7 +1148,7 @@ END OF REPORT`;
               }),
             }),
           ]);
-          console.log("✅ GHL contact tagged, note attached, and custom fields populated.");
+          console.log("✅ GHL contact updated with tags and data quality flag.");
         } catch (ghlErr) {
           console.error("GHL handoff failed (non-fatal):", ghlErr);
         }
@@ -1013,7 +1159,14 @@ END OF REPORT`;
       console.log("⏭️  Skipping GHL: No API key configured.");
     }
 
-    return res.status(200).json({ success: true, docUrl: documentUrl, fileName });
+    return res.status(200).json({
+      success: true,
+      docUrl: documentUrl,
+      fileName,
+      version: "v2",
+      data_quality: validatedBrief.data_quality,
+      data_gaps: validatedBrief.data_gaps,
+    });
   } catch (error: any) {
     console.error("❌ Blueprint Generation Error:", error);
     return res.status(400).json({ error: error.message });
