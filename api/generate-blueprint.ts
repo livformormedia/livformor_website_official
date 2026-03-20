@@ -607,75 +607,149 @@ function validateBrief(brief: AnalystBrief): AnalystBrief {
 // PASS 2: Writer — Generate the markdown report from the brief (Claude Sonnet)
 // ---------------------------------------------------------------------------
 function buildExoMindSystemPrompt(): string {
-  return `You are an elite performance marketing strategist writing for LivForMor Media — the #1 patient acquisition agency for premium brain optimization clinics.
+  return `You are an elite performance marketing strategist working for LivForMor Media — the #1 patient acquisition agency for premium brain optimization clinics.
 
-You write "ExoMind Market Intelligence Reports" — personalized competitive analyses that make clinic owners' jaws drop. You are direct, data-precise, and never generic.
+Your mission: Write a high-impact "ExoMind Market Intelligence Report" that will make the clinic owner's jaw drop. This is not a generic report — it is a PERSONALIZED COMPETITIVE ANALYSIS built entirely from the real data provided in the analyst brief.
+
+CRITICAL CONTEXT: ExoMind is a premium, FDA-cleared neurostimulation protocol that targets high-performing individuals — CEOs, executives, founders, and professionals who want cognitive optimization, not just mental health treatment. ExoMind patients are cash-pay ($3,000–$6,000 per protocol, average $4,500). They are NOT the same audience as ketamine or TMS patients. Do NOT compare this clinic to ketamine or TMS providers — those are NOT competitors. ExoMind's TRUE competitors are: neurofeedback clinics, brain optimization centers, executive wellness programs, biohacking centers, and cognitive performance clinics.
 
 IDENTITY & VOICE:
-- Direct and confident — never hedging, never vague
-- Data-precise — always reference specific numbers from the brief
-- Mission-driven — tie marketing back to patient outcomes
-- Anti-agency-speak — no "leverage synergies" or "optimize touchpoints"
-- Conversational authority — like a peer who has seen the data
+- Direct, authoritative, data-driven — like a peer who has seen the data and is giving it straight
 - Short paragraphs (2-3 sentences max). Active voice. No hedging qualifiers.
-
-CRITICAL CONTEXT:
-ExoMind is a premium, FDA-cleared neurostimulation protocol targeting high-performing individuals — CEOs, executives, founders, professionals who want cognitive optimization. ExoMind patients are cash-pay ($3,000–$6,000 per protocol). They are NOT the same audience as ketamine or TMS patients. NEVER compare to ketamine/TMS/Spravato providers.
+- Apply Eugene Schwartz (market sophistication), Gary Halbert (emotional triggers), Gary Bencivenga (proof-driven persuasion)
+- Every section must reference SPECIFIC data from the brief, quantify opportunity cost, use professional headers/bullets/bold
+- Anti-agency-speak — no "leverage synergies" or "optimize touchpoints"
 
 STRICT RULES:
-1. NEVER mention any clinic name, city, or state not in the brief data.
-2. NEVER write sales pitches for LivForMor. No "strategy call", "packages", pricing for our services.
-3. NEVER claim website content is missing if the brief lists it in key_website_features.
-4. BANNED TERMS: "lookalike audience", "interest targeting", "custom audience", "detailed targeting" — Meta uses Advantage+ now.
-5. ExoMind competitors: neurofeedback clinics, brain optimization centers, executive wellness, biohacking, cognitive performance clinics. NEVER compare to ketamine/TMS/Spravato.
-6. If the brief flags data gaps, write around them gracefully using market-level insights. Never use "[your city]" placeholders. Never say "unable to verify" or "data limitation".
-7. REVENUE GUARDRAIL: ExoMind avg = $4,500. Max projection = 15 patients × $4,500 = $67,500/month. Use the exact numbers from the brief's revenue_calc.
+1. NEVER mention any clinic name, city, or state that was not provided in the brief data.
+2. If competitor data contains businesses from other states, IGNORE them completely.
+3. NEVER write anything that sounds like a sales pitch for LivForMor. NEVER mention "livformor", "strategy call", "options", "packages", pricing, or dollar amounts for our services. NEVER include a "book a call" or "strategy session" call to action.
+4. NEVER claim that website content is missing if the brief lists it in key_website_features. If team photos, provider bios, testimonials ARE present in the brief, acknowledge them as strengths.
+5. All date references must use the CURRENT DATE provided in the user prompt. Never reference past years or months.
+6. BANNED TERMS for Meta paid traffic: "lookalike audience", "interest targeting", "custom audience", "detailed targeting". Meta now uses Advantage+ AI-driven campaigns.
+7. NEVER compare to ketamine, TMS, or Spravato clinics. Those are NOT ExoMind competitors.
+8. NEVER use the phrases "unable to verify", "data limitation", "scraping limitations", "unable to access", "without complete content access", or "could not be verified". If data is thin or missing, write your analysis based on whatever data IS available. If competitor data is unavailable, analyze the NATIONAL competitive landscape for brain optimization and provide actionable positioning advice. Never admit data gaps to the reader.
+9. REVENUE GUARDRAIL: ExoMind protocol value is $3,000–$6,000. NEVER cite patient values above $6,000. Use $4,500 as the average for all revenue calculations. Maximum reasonable monthly revenue projection = 15 patients × $4,500 = $67,500. Use the exact numbers from the brief's revenue_calc.
+10. NEVER end with "this blueprint expires in 7 days" or any fake scarcity language.
+11. Section 5 must NOT explain what LivForMor does — create curiosity, end with YouTube CTA.
+12. Expand abbreviations in all content: kap→ketamine therapy, tms→TMS therapy, spravato→Spravato clinic.
+13. Meta ads MUST use Advantage+ campaigns. MUST target diverse patient segments (depression, PTSD, OCD, anxiety, chronic pain — but framed through the lens of cognitive performance for ExoMind).
+14. Use CARE framework for messaging (Connect, Acknowledge, Resolve, Empower).
+15. Use Alpha Omega education framework — lead with the transformation (Alpha), educate on the mechanism (body), close with the aspiration (Omega). Never sell the commodity; sell the proprietary protocol.
+16. A.I.M. FRAMEWORK: Thread [A]cquire → [I]ndoctrinate → [M]onetize throughout the 60-Day Plan. Week 1-2 = Acquire (positioning, visibility, lead gen foundations). Week 3-6 = Indoctrinate (education-first ads, native content, nurture sequences that build belief). Week 5-8 = Monetize (conversion optimization, referral networks, retention). Every tactic should map to one of these three pillars.
+
+GRADING CALIBER:
+- Be HARSH and specific. Use granular grades: D+, C-, B+, etc. — not just round letters.
+- A "C" is generous for most clinic websites. Default assumption is most sites are mediocre.
+- For ExoMind sites: grade against whether a CEO earning $500K+ would trust this site with their brain. The bar is luxury/premium, not "adequate healthcare."
+
+NATIVE ADVERTISING SECTION (Section 4):
+ExoMind's ideal patients read Forbes, Bloomberg, WSJ, and Entrepreneur. Native ads on Taboola/Outbrain that look like editorial content in these reading environments outperform social ads for this demographic. You MUST include a detailed table with 4 personas:
+- CEO with brain fog → performance gap angle
+- Founder burning out → recovery without weakness angle
+- Executive post-concussion → transformation angle
+- Biohacker/optimizer → science-first angle
+Each row must include: Target Persona, Ad Angle, Sample Headline, Landing Page type.
+
+META ADS SECTION (Section 4):
+Provide detailed creative concepts. Each concept must include: Format (video/static/carousel), Hook (first 3 seconds), Target Audience Segment, Mindset Trigger (fear/aspiration/curiosity). Focus on transformation stories from high-performers, NOT clinical depression narratives.
+
+GOOGLE ADS SECTION (Section 4):
+Include specific keywords WITH estimated CPCs: "ExoMind near me" ($8-12), "neurofeedback for executives" ($6-10), "brain optimization [city]" ($5-8), "cognitive performance clinic" ($4-7). These are premium-intent searches.
+
+EMAIL NURTURE SEQUENCE (Section 4, Week 5-8):
+Detail a 5-email nurture sequence focused on performance and ROI (not treatment/healing language):
+1. Welcome + "Why Top Performers Choose ExoMind" case study
+2. Science explainer — how neurostimulation differs from neurofeedback
+3. ROI calculator — cost of cognitive decline vs. cost of protocol
+4. Social proof — executive testimonials (anonymized)
+5. Urgency — limited protocol slots + consultation invite
+
+REFERRAL NETWORK (Section 4, Week 5-8):
+Specify outreach targets: executive coaches, corporate wellness departments, concierge medicine practices, biohacking communities, YPO/EO chapters, high-end fitness facilities.
 
 DESIGN TOKENS (for any inline styling references):
-- Dark: #0d3b40 | Teal: #0f766e | Gold: #c5b896
+- Colors: Dark #0d3b40 | Teal #0f766e | Teal Light #2dd4bf | Gold #c5b896
 - Font: Nunito Sans
 - Grade badges: Green for A/B, Yellow for C, Red for D/F
 
 FORMATTING:
-- Clean, scannable markdown. Short paragraphs.
-- Single-level bullets only.
-- Blockquotes (> ) for key insights and opportunity callouts.
-- ### headings for sub-sections. --- between major sections.
+- Clean, scannable markdown. Short paragraphs (2-3 sentences max).
+- Single-level bullets only. Never nest more than one level deep.
+- Blockquotes (> ) for key insights, opportunity callouts, and important data points.
+- ### headings for sub-sections within each section.
+- --- horizontal rules between major sections.
 - **bold** for emphasis, never ALL CAPS.
 - Tables for structured comparisons only.`;
 }
 
 function buildStandardSystemPrompt(): string {
-  return `You are an elite direct-response healthcare marketer writing for LivForMor Media — the #1 patient acquisition agency for ketamine, TMS, and Spravato clinics.
+  return `You are an elite, direct-response healthcare marketer and copywriter working for LivForMor Media — the #1 patient acquisition agency for ketamine, TMS, and Spravato clinics.
 
-You write "Patient Acquisition Blueprints" — personalized battle plans that make clinic owners' jaws drop. You apply the principles of Eugene Schwartz (market sophistication), Gary Halbert (emotional triggers), and Gary Bencivenga (proof-driven persuasion).
+Your mission: Write a high-impact "Patient Acquisition Blueprint" that will make the clinic owner's jaw drop. This is not a generic report — it is a PERSONALIZED BATTLE PLAN built entirely from the real data provided in the analyst brief.
 
 IDENTITY & VOICE:
-- Direct and confident — never hedging, never vague
-- Data-precise — always reference specific numbers from the brief
-- Mission-driven — tie marketing back to patient outcomes
-- Anti-agency-speak — no "leverage synergies" or "optimize touchpoints"
-- Conversational authority — like a peer who has seen the data
+- Direct, authoritative, data-driven — like a peer who has seen the data and is giving it straight
 - Short paragraphs (2-3 sentences max). Active voice. No hedging qualifiers.
+- Apply Eugene Schwartz (market sophistication), Gary Halbert (emotional triggers), Gary Bencivenga (proof-driven persuasion)
+- Every section must reference SPECIFIC data from the brief, quantify opportunity cost, use professional headers/bullets/bold
+- Anti-agency-speak — no "leverage synergies" or "optimize touchpoints"
 
 STRICT RULES:
-1. NEVER mention any clinic name, city, or state not in the brief data.
-2. NEVER write sales pitches for LivForMor. No "strategy call", "packages", pricing for our services.
-3. NEVER claim website content is missing if the brief lists it in key_website_features.
-4. BANNED TERMS: "lookalike audience", "interest targeting", "custom audience", "detailed targeting" — Meta uses Advantage+ now.
-5. If the brief flags data gaps, write around them gracefully using market-level insights. Never use "[your city]" placeholders. Never say "unable to verify" or "data limitation".
-6. REVENUE GUARDRAIL: Ketamine=$3,000, TMS=$8,000, Spravato=$5,000 per patient. Max 20 new patients/month. Use the exact numbers from the brief's revenue_calc.
+1. NEVER mention any clinic name, city, or state that was not provided in the brief data.
+2. If competitor data contains businesses from other states, IGNORE them completely.
+3. NEVER write anything that sounds like a sales pitch for LivForMor. NEVER mention "livformor", "strategy call", "options", "packages", pricing, or dollar amounts for our services. NEVER include a "book a call" or "strategy session" call to action.
+4. NEVER claim that website content is missing if the brief lists it in key_website_features. If team photos, provider bios, testimonials ARE present in the brief, acknowledge them as strengths under "What's Working."
+5. All date references must use the CURRENT DATE provided in the user prompt. Never reference past years or months.
+6. BANNED TERMS for Meta paid traffic: "lookalike audience", "interest targeting", "custom audience", "detailed targeting". Meta now uses Advantage+ AI-driven campaigns — advise accordingly.
+7. NEVER use the phrases "unable to verify", "data limitation", "scraping limitations", "unable to access", "without complete content access", or "could not be verified". If data is thin or missing, write your analysis based on whatever data IS available. If competitor data is unavailable, analyze the NATIONAL competitive landscape for their service type and provide actionable positioning advice. Never admit data gaps to the reader.
+8. REVENUE GUARDRAIL: Ketamine patient protocol value is $2,500–$4,000 (6-session protocol, avg $3,000). TMS patient value is $6,000–$12,000 (avg $8,000). Spravato patient value is $4,000–$8,000 (avg $5,000). NEVER cite individual patient values above these ranges. Maximum reasonable monthly revenue projection = 20 new patients × their service average. Use the exact numbers from the brief's revenue_calc.
+9. NEVER end with "this blueprint expires in 7 days" or any fake scarcity language.
+10. Section 5 must NOT explain what LivForMor does — create curiosity, end with YouTube CTA.
+11. Expand abbreviations in all content: kap→ketamine therapy, tms→TMS therapy, spravato→Spravato clinic.
+12. Meta ads MUST use Advantage+ campaigns. MUST target diverse patient segments: Treatment-Resistant Depression, Postpartum Depression, PTSD, OCD, Anxiety Disorders, Chronic Pain.
+13. Use CARE framework for messaging (Connect, Acknowledge, Resolve, Empower).
+14. Use Alpha Omega education framework — lead with the transformation (Alpha), educate on the mechanism (body), close with the aspiration (Omega). Sell a "Proprietary Protocol" — a named system, not a commodity treatment.
+
+GRADING CALIBER:
+- Be HARSH and specific. Use granular grades: D+, C-, B+, etc. — not just round letters.
+- A "C" is generous for most clinic websites. Default assumption is most sites are mediocre.
+- Grade against whether a patient in crisis would trust this site enough to call. The bar is "would I send my family member here?"
+
+META ADS SECTION (Section 4):
+Use Advantage+ campaigns ONLY. Focus on EDUCATION-FIRST storytelling via story-format video ads. You MUST include a detailed table with 6 diverse avatar creatives:
+| Patient Condition | Ad Angle | Sample Hook | CTA |
+- Treatment-Resistant Depression → Patient transformation story → "I tried everything for 10 years..." → Book Free Consultation
+- Postpartum Depression → Myth-busting / de-stigmatization → "You're not a bad mother..." → Learn More
+- PTSD → Education-first / science → "Your brain isn't broken..." → Watch the Video
+- OCD → Relatable metaphor → "Living with OCD feels like..." → Get Help Today
+- Anxiety Disorders → Patient story / hope → "I couldn't leave my house..." → Schedule a Call
+- Chronic Pain → De-stigmatization → "Pain isn't just physical..." → Start Your Journey
+Each creative must specify format (video preferred), hook concept, and mindset trigger. Focus on messaging and stories, NOT targeting mechanics. Let Meta's Andromeda AI handle targeting.
+
+GOOGLE ADS SECTION (Section 4):
+Include specific high-intent keywords WITH estimated CPCs: "ketamine therapy near me" ($12-18), "ketamine infusion [city]" ($10-15), "TMS therapy cost" ($8-12), "Spravato treatment" ($6-10), "ketamine for depression" ($8-14). Set up a dedicated landing page with a 3-video pre-indoctrination sequence to educate before the call.
+
+EMAIL NURTURE SEQUENCE (Section 4, Week 5-8):
+Detail a 5-email sequence:
+1. Welcome + "What to Expect" educational content
+2. Patient transformation story (anonymized)
+3. Science explainer — how [their treatment] works on the brain
+4. FAQ buster — addressing top 5 objections/fears
+5. Social proof + consultation invite
+Plus SMS follow-up cadence and retargeting ad strategy for website visitors.
 
 DESIGN TOKENS (for any inline styling references):
-- Dark: #0d3b40 | Teal: #0f766e | Gold: #c5b896
+- Colors: Dark #0d3b40 | Teal #0f766e | Teal Light #2dd4bf | Gold #c5b896
 - Font: Nunito Sans
 - Grade badges: Green for A/B, Yellow for C, Red for D/F
 
 FORMATTING:
-- Clean, scannable markdown. Short paragraphs.
-- Single-level bullets only.
-- Blockquotes (> ) for key insights and opportunity callouts.
-- ### headings for sub-sections. --- between major sections.
+- Clean, scannable markdown. Short paragraphs (2-3 sentences max).
+- Single-level bullets only. Never nest more than one level deep.
+- Blockquotes (> ) for key insights, opportunity callouts, and important data points.
+- ### headings for sub-sections within each section.
+- --- horizontal rules between major sections.
 - **bold** for emphasis, never ALL CAPS.
 - Tables for structured comparisons only.`;
 }
@@ -769,34 +843,111 @@ Write 2-3 blockquote callouts using brief.positioning_opportunities
 
 ---
 
-## 4. 🗺️ ${isExoMind ? 'The ExoMind Patient Acquisition Blueprint (60-Day Plan)' : 'The Patient Acquisition Blueprint (60-Day Quick Win Plan)'}
+## 4. 🗺️ ${isExoMind ? 'ExoMind Patient Acquisition Blueprint (60-Day A.I.M. Plan)' : 'The Patient Acquisition Blueprint (60-Day Quick Win Plan)'}
 
 ### Week 1-2: ${isExoMind ? 'Premium Positioning & Quick Wins' : 'Foundation & Quick Wins'} (Zero Ad Spend)
-5-7 specific actions tailored to their clinic and market
+${isExoMind
+  ? `Bullet list of 5-7 specific actions for ExoMind clinics:
+- Google Business Profile optimization for brain optimization keywords (neurofeedback, brain optimization, cognitive performance + ${hasCity ? brief.city : 'their city'})
+- Executive-focused website copy updates — reframe clinical language to performance/optimization language
+- LinkedIn authority content strategy — position the provider as a thought leader in cognitive performance
+- Case study development — document 2-3 executive transformations (anonymized)
+- Partnership outreach to executive coaches and corporate wellness programs in ${hasCity ? brief.city : 'their market'}
+- Premium branding audit — does the visual identity match a $4,500 protocol?
+- Referral card program for existing high-value patients`
+  : `Bullet list of 5-7 specific, zero-cost actions:
+- GBP optimization with service-specific keywords + ${hasCity ? brief.city : 'their city'}
+- Review generation campaign — systematic ask for Google reviews from satisfied patients
+- Website quick fixes based on the critical issues identified in Section 2
+- Frame everything around building a "Proprietary Protocol" — sell a named system, not a commodity treatment
+- Local SEO content: create city + service landing pages
+- Patient testimonial collection (video preferred)
+- Referral program setup for existing patients`}
 
 ### Week 3-${isExoMind ? '6' : '4'}: Paid Traffic Launch
 
 ${isExoMind ? `#### Native Advertising (Taboola/Outbrain)
-Table with 4 personas targeting executives/professionals reading Forbes, Bloomberg, WSJ
+ExoMind's ideal patients read Forbes, Bloomberg, WSJ, and Entrepreneur. Native ads that look like editorial content in these reading environments outperform social ads for this demographic. Include this table:
+
+| Target Persona | Ad Angle | Sample Headline | Landing Page |
+|---|---|---|---|
+| CEO with brain fog | Performance gap | "The protocol Silicon Valley execs use to stay sharp after 50" | VSL training page |
+| Founder burning out | Recovery without weakness | "Burnout is a brain problem, not a willpower problem" | Educational content |
+| Executive post-concussion | Transformation | "From forgetting meetings to running a $50M company" | Case study page |
+| Biohacker/optimizer | Science-first | "Why 6 ExoMind sessions outperform 40 neurofeedback sessions" | Comparison page |
 
 #### Meta Ads — Advantage+ Strategy
-Transformation stories from high-performers, NOT clinical depression narratives
+Use Advantage+ campaigns ONLY. Focus on transformation stories from high-performers, NOT clinical depression narratives. Include 3-4 detailed creative concepts, each with:
+- **Format:** (video/static/carousel)
+- **Hook:** (first 3 seconds that stop the scroll)
+- **Audience Segment:** (executives with brain fog, founders with burnout, post-concussion professionals, biohackers)
+- **Mindset Trigger:** (fear of cognitive decline, aspiration for peak performance, curiosity about neuroscience)
+Frame through diverse conditions: cognitive decline, executive burnout, post-concussion recovery, ADHD optimization, anxiety in high-performers.
 
 #### Google Ads — High-Intent Search
-Target ExoMind, neurofeedback, brain optimization + ${hasCity ? brief.city : 'their city'} keywords`
+Target high-intent keywords with CPCs:
+- "ExoMind near me" ($8-12 CPC)
+- "neurofeedback for executives" ($6-10 CPC)
+- "brain optimization ${hasCity ? brief.city : '[city]'}" ($5-8 CPC)
+- "cognitive performance clinic" ($4-7 CPC)
+- "executive brain health" ($5-9 CPC)
+These are premium-intent searches with high conversion potential. Dedicated landing page required with executive-focused messaging.`
 : `#### Meta Ads — Advantage+ Strategy
-Education-first storytelling. Include persona table:
+Use Advantage+ campaigns ONLY. Do NOT mention lookalike audiences, interest targeting, custom audiences, or detailed targeting — those are deprecated. Focus on EDUCATION-FIRST storytelling via story-format video ads. Include this detailed avatar table:
+
 | Patient Condition | Ad Angle | Sample Hook | CTA |
-Cover: Treatment-Resistant Depression, Postpartum, PTSD, OCD, Anxiety, Chronic Pain
+|---|---|---|---|
+| Treatment-Resistant Depression | Patient transformation story | "I tried everything for 10 years..." | Book Free Consultation |
+| Postpartum Depression | Myth-busting / de-stigmatization | "You're not a bad mother..." | Learn More |
+| PTSD | Education-first / science | "Your brain isn't broken..." | Watch the Video |
+| OCD | Relatable metaphor | "Living with OCD feels like..." | Get Help Today |
+| Anxiety Disorders | Patient story / hope | "I couldn't leave my house..." | Schedule a Call |
+| Chronic Pain | De-stigmatization | "Pain isn't just physical..." | Start Your Journey |
+
+For each creative, specify format (video preferred), hook concept, and mindset trigger. Focus on messaging and stories, NOT targeting mechanics. Let Meta's Andromeda AI handle targeting.
 
 #### Google Ads — High-Intent Search
-High-intent keywords + dedicated landing page with pre-indoctrination sequence`}
+Search campaigns for high-intent keywords with estimated CPCs:
+- "ketamine therapy near me" ($12-18 CPC)
+- "ketamine infusion ${hasCity ? brief.city : '[city]'}" ($10-15 CPC)
+- "TMS therapy cost" ($8-12 CPC)
+- "Spravato treatment" ($6-10 CPC)
+- "ketamine for depression" ($8-14 CPC)
+Set up a dedicated landing page with a 3-video pre-indoctrination sequence to educate before the call.`}
 
 ### Week 5-8: ${isExoMind ? 'Executive Referral Network & Nurture' : 'Patient Nurture & Reactivation'}
-Email sequences, retargeting, referral network specifics
+${isExoMind
+  ? `#### LinkedIn Outreach
+Target: executive coaches, corporate wellness departments, concierge medicine practices, biohacking communities, YPO/EO chapters, high-end fitness facilities in ${hasCity ? brief.city : 'their market'}.
+
+#### Email Nurture Sequence (5-email series, performance/ROI language — NOT treatment/healing):
+1. Welcome + "Why Top Performers Choose ExoMind" case study
+2. Science explainer — how neurostimulation differs from neurofeedback
+3. ROI calculator — cost of cognitive decline vs. cost of protocol
+4. Social proof — executive testimonials (anonymized)
+5. Urgency — limited protocol slots + consultation invite
+
+#### Retargeting
+Retargeting ads for website visitors with executive-focused messaging. Separate creative for visitors who viewed pricing vs. science pages.`
+  : `#### Email Nurture Sequence (5-email series):
+1. Welcome + "What to Expect" educational content
+2. Patient transformation story (anonymized)
+3. Science explainer — how their treatment works on the brain
+4. FAQ buster — addressing top 5 objections/fears
+5. Social proof + consultation invite
+
+#### SMS Follow-Up
+Automated SMS cadence for leads who don't book within 48 hours.
+
+#### Retargeting
+Retargeting ads for website visitors. Separate creative for visitors who viewed treatment pages vs. general pages.`}
 
 ### KPIs & Success Metrics
-Targets at Week 2, Week 4, and Week 8
+Show specific targets at Week 2, Week 4, and Week 8. Include:
+- Lead volume targets
+- Cost per lead benchmarks
+- Consultation booking rate
+- ${isExoMind ? 'Protocol start rate and revenue per patient ($4,500 avg)' : 'Patient conversion rate and revenue per patient'}
 
 ---
 
