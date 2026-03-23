@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": {
+    "apify-competitor-intelligence": {
+      "source": "apify/agent-skills",
+      "sourceType": "github",
+      "computedHash": "d624cb710ea4a149b975c627f2e4af38ff5fddbb0eb24328ddf938c2a6f41975"
+    },
+    "apify-market-research": {
+      "source": "apify/agent-skills",
+      "sourceType": "github",
+      "computedHash": "f878e57fdc4b48e7953bbdfa43e5b23440e222a872160be463836848740c3686"
+    },
+    "apify-ultimate-scraper": {
+      "source": "apify/agent-skills",
+      "sourceType": "github",
+      "computedHash": "847df3384aa8e9501211d69c637a8ec0f4ec7d39bc7c6517b37d04238f190628"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+# robots.txt — livformor.com
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://www.livformor.com/api/sitemap.xml
+
+# Block internal/admin pages
+Disallow: /command-center/
+Disallow: /ad-builder
+Disallow: /ExportHTML
+Disallow: /teleprompter
+Disallow: /shoot-plan
+Disallow: /blueprint

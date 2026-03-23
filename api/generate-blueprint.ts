@@ -57,8 +57,12 @@ async function runApifyActorSync(
 
 // ---------------------------------------------------------------------------
 // Helper: Extract readable text from a website via Apify website-content-crawler.
+// Falls back to a simple fetch() + HTML strip if Apify returns thin/no content.
 // ---------------------------------------------------------------------------
 async function extractWebsiteText(url: string, apifyToken: string): Promise<string> {
+  let apifyResult = "";
+
+  // --- Attempt 1: Apify Playwright crawler ---
   try {
     console.log(`Extracting website text via Apify website-content-crawler: ${url}`);
     const items = await runApifyActorSync(
@@ -73,22 +77,88 @@ async function extractWebsiteText(url: string, apifyToken: string): Promise<stri
       90
     );
 
-    if (!items || items.length === 0) {
-      return "Website scrape returned no content.";
+    if (items && items.length > 0) {
+      apifyResult = (items as Array<Record<string, unknown>>)
+        .map((item) => {
+          const title = item.title ?? "";
+          const text = item.markdown ?? item.text ?? item.html ?? "";
+          return `### ${title}\n${text}`;
+        })
+        .join("\n\n---\n\n");
     }
-
-    const combined = (items as Array<Record<string, unknown>>)
-      .map((item) => {
-        const title = item.title ?? "";
-        const text = item.markdown ?? item.text ?? item.html ?? "";
-        return `### ${title}\n${text}`;
-      })
-      .join("\n\n---\n\n");
-
-    return combined.substring(0, 15000);
   } catch (err) {
     console.error("Apify website-content-crawler error:", err);
-    return `Website extraction failed: ${(err as Error).message}`;
+  }
+
+  // --- If Apify gave us decent data, return it ---
+  if (apifyResult && apifyResult.length > 500) {
+    console.log(`✅ Apify returned ${apifyResult.length} chars`);
+    return apifyResult.substring(0, 15000);
+  }
+
+  // --- Attempt 2: Direct fetch() fallback (homepage + key inner pages) ---
+  console.log(`⚠️ Apify returned thin/no data (${apifyResult.length} chars). Falling back to direct fetch...`);
+
+  const stripHtml = (html: string): string => {
+    return html
+      .replace(/<script[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[\s\S]*?<\/style>/gi, "")
+      .replace(/<nav[\s\S]*?<\/nav>/gi, "")
+      .replace(/<footer[\s\S]*?<\/footer>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  const fetchPage = async (pageUrl: string): Promise<string> => {
+    try {
+      const res = await fetch(pageUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml",
+        },
+        redirect: "follow",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!res.ok) return "";
+      return stripHtml(await res.text());
+    } catch { return ""; }
+  };
+
+  try {
+    // Fetch homepage first
+    const homepage = await fetchPage(url);
+    const baseUrl = url.replace(/\/$/, "");
+
+    // Also try common inner pages for credentials, team, services
+    const innerPaths = ["/about", "/about-us", "/who-we-are", "/team", "/our-team", "/providers", "/services"];
+    const innerResults = await Promise.allSettled(
+      innerPaths.map(path => fetchPage(`${baseUrl}${path}`))
+    );
+
+    const innerTexts = innerResults
+      .filter((r): r is PromiseFulfilledResult<string> => r.status === "fulfilled" && r.value.length > 200)
+      .map((r, i) => `\n\n### Page: ${innerPaths[i]}\n${r.value}`)
+      .join("");
+
+    const combined = `### Homepage (${url})\n${homepage}${innerTexts}`;
+
+    if (combined.length > 500) {
+      console.log(`✅ Direct fetch fallback returned ${combined.length} chars (homepage + ${innerTexts ? "inner pages" : "no inner pages"})`);
+      return combined.substring(0, 15000);
+    }
+
+    console.log(`⚠️ Direct fetch returned very thin content (${combined.length} chars)`);
+    return apifyResult || "Website scrape returned no content.";
+  } catch (err) {
+    console.error("Direct fetch fallback error:", err);
+    return apifyResult || `Website extraction failed: ${(err as Error).message}`;
   }
 }
 
@@ -355,6 +425,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     console.log(`🚀 Starting Research Pipeline: ${firstName} ${lastName} — ${website}`);
 
+    // --- Persist submission data server-side (insurance against client-side queue-dashboard failures) ---
+    const _supabaseUrl = process.env.SUPABASE_URL || "";
+    const _supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+    if (_supabaseUrl && _supabaseKey) {
+      fetch(`${_supabaseUrl}/rest/v1/research_queue`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": _supabaseKey,
+          "Authorization": `Bearer ${_supabaseKey}`,
+          "Prefer": "resolution=ignore-duplicates",
+        },
+        body: JSON.stringify({
+          contact_name: `${firstName} ${lastName}`.trim(),
+          contact_email: email || null,
+          clinic_name: payload.clinicName || payload.clinic_name || `${firstName} ${lastName}`.trim(),
+          clinic_domain: website || null,
+          services: Array.isArray(services) ? `{${services.join(",")}}` : null,
+          city_state: cityState || null,
+          monthly_budget: monthlyBudget || null,
+          team_structure: teamStructure || null,
+          status: "processing",
+        }),
+      }).catch(err => console.error("Server-side research_queue insert failed:", err));
+    }
+
     // ----- API Keys -----
     const apifyKey = process.env.APIFY_API_TOKEN || "";
     const ghlApiKey = process.env.GHL_API_TOKEN || "";
@@ -515,15 +611,46 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const systemPrompt = isExoMind
       ? // ================================================================
-        // EXOMIND-SPECIFIC BLUEPRINT PROMPT
+        // EXOMIND-SPECIFIC BLUEPRINT PROMPT — v2 (A.I.M. Method)
         // ================================================================
-        `You are an elite performance marketing strategist working for LivForMor Media — the #1 patient acquisition agency for premium brain optimization clinics.
+        `You are an elite performance marketing strategist working for LivForMor Media — the #1 patient acquisition agency for clinics adding ExoMind neurostimulation protocols.
 
-Your mission: Write a high-impact "ExoMind Market Intelligence Report" that will make the clinic owner's jaw drop. This is not a generic report — it is a PERSONALIZED COMPETITIVE ANALYSIS built entirely from the real data provided below.
-
-CRITICAL CONTEXT: ExoMind is a premium, FDA-cleared neurostimulation protocol that targets high-performing individuals — CEOs, executives, founders, and professionals who want cognitive optimization, not just mental health treatment. ExoMind patients are cash-pay ($3,000–$6,000 per protocol). They are NOT the same audience as ketamine or TMS patients. Do NOT compare this clinic to ketamine or TMS providers — those are NOT competitors.
+Your mission: Write a high-impact "ExoMind Market Intelligence Report" that will make this clinic owner's jaw drop. This is NOT a generic report — it is a PERSONALIZED COMPETITIVE ANALYSIS built entirely from the real data provided below, tailored to THIS specific clinic's current positioning, services, and market.
 
 CURRENT DATE: ${currentDate}
+
+---
+
+## WHAT IS EXOMIND?
+ExoMind is a premium, FDA-cleared neurostimulation protocol. It delivers measurable cognitive and neurological improvements in as few as 6 sessions. ExoMind patients are CASH-PAY — no insurance, no prior authorization.
+
+## THE A.I.M. METHOD™ — LivForMor Media's Proprietary Patient Acquisition Framework
+Every strategy recommendation in this report MUST be structured around the A.I.M. Method:
+
+**A = AUDIENCE** — Identify the exact patients who need ExoMind based on THIS clinic's existing patient base, local demographics, and services. NOT generic "Fortune 500 CEOs." Real people: the veteran with treatment-resistant depression, the professional mom with anxiety who's tried everything, the executive with post-concussion brain fog, the chronic pain patient who wants off opioids. Analyze the clinic's CURRENT patient population and build outward from there.
+
+**I = INTENT** — Intercept patients at the moment of highest intent. These are people actively researching alternatives to medication, reading about neurofeedback, Googling "TMS near me" or "brain fog treatment," or asking their doctor about non-drug options. Map the specific search terms, content topics, and digital touchpoints where ExoMind-ready patients are RIGHT NOW.
+
+**M = MINDSET** — Craft messaging that speaks to patients' internal dialogue — the fear ("what if this doesn't work either"), the skepticism ("I've tried everything"), the hope ("maybe this is finally the answer"), and the identity ("I'm not broken, I just need the right protocol"). By the time they book a consultation, they've already decided ExoMind is for them. Every ad, every landing page, every email must address MINDSET.
+
+---
+
+## CRITICAL: CLINIC-TYPE DIFFERENTIATION
+Before writing ANYTHING, analyze the SCRAPED WEBSITE DATA to determine this clinic's current focus:
+- Pain relief / chronic pain management?
+- Addiction recovery / substance abuse?
+- General psychiatry / insurance-based mental health?
+- Wellness spa / integrative health?
+- Neurofeedback / functional medicine?
+- Already positioned for ExoMind?
+
+Then TAILOR EVERY RECOMMENDATION to bridge FROM their current positioning TO ExoMind. Do NOT tell them to abandon their existing business. Instead, show how ExoMind COMPLEMENTS and ELEVATES what they already do. For example:
+- If they focus on PAIN: Show how ExoMind serves chronic pain patients who want non-opioid alternatives — this is their SAME audience, new modality
+- If they focus on ADDICTION RECOVERY: Show how ExoMind helps patients with treatment-resistant depression and anxiety that drives relapse — ExoMind keeps patients sober longer
+- If they focus on PSYCHIATRY: Show how ExoMind fills the gap for patients who've failed 3+ medications — the "medication-resistant" patient is ExoMind's sweet spot
+- If they focus on WELLNESS/SPA: Show how ExoMind creates a premium tier that transforms them from a wellness center into a neuroscience-backed optimization facility
+
+---
 
 ## STRICT RULES:
 1. NEVER mention any clinic name, city, or state that was not provided in the CLINIC OWNER DATA.
@@ -533,10 +660,18 @@ CURRENT DATE: ${currentDate}
 5. NEVER include a "book a call" or "strategy session" call to action.
 6. NEVER claim that website content is missing if the SCRAPED DATA shows it IS present.
 7. All date references must use the CURRENT DATE provided above. Never reference past years or months.
-8. BANNED TERMS for Meta paid traffic: "lookalike audience", "interest targeting", "custom audience", "detailed targeting". Meta now uses Advantage+ AI-driven campaigns.
-9. ExoMind's TRUE competitors are: neurofeedback clinics, brain optimization centers, executive wellness programs, biohacking centers, and cognitive performance clinics. NEVER compare to ketamine, TMS, or Spravato clinics.
-10. NEVER use the phrases "unable to verify", "data limitation", "scraping limitations", "unable to access", "without complete content access", or "could not be verified". If data is thin or missing for a section, write your analysis based on whatever data IS available. If competitor data is unavailable, analyze the NATIONAL competitive landscape for their service type and provide actionable positioning advice. Never admit data gaps to the reader.
-11. REVENUE GUARDRAIL: ExoMind protocol value is $3,000–$6,000. NEVER cite patient values above $6,000. Use $4,500 as the average for all revenue calculations. Maximum reasonable monthly revenue projection = 15 patients × $4,500 = $67,500.
+12. CRITICAL — SERVICES FIELD vs. WEBSITE REALITY: The 'Services INTERESTED IN Adding' field below shows what the clinic WANTS to offer — NOT what is currently on their website. You MUST determine what the clinic currently does by analyzing the SCRAPED WEBSITE DATA. If the scraped content shows pain relief, weight loss, psychiatry, etc. with ZERO mention of ExoMind, then the clinic does NOT currently offer ExoMind. NEVER write 'ExoMind already identified as a core service' unless the SCRAPED WEBSITE DATA explicitly mentions ExoMind.
+8. BANNED TERMS for Meta paid traffic: "lookalike audience", "interest targeting", "custom audience", "detailed targeting". Meta now uses Advantage+ AI-driven campaigns with Andromeda targeting.
+9. ExoMind's TRUE competitors are: neurofeedback clinics, brain optimization centers, executive wellness programs, biohacking centers, and cognitive performance clinics. NEVER compare to ketamine, TMS, or Spravato clinics — those are complementary services, not competitors.
+10. NEVER write "Incomplete Grade", "unable to verify", "data limitation", "scraping limitations", "unable to access", "without complete content access", or "could not be verified". If website data is limited or only the homepage loaded, ANALYZE WHAT YOU HAVE. Give a real grade based on available data. If competitor data is unavailable, analyze the NATIONAL competitive landscape for brain optimization and provide actionable positioning advice. NEVER admit data gaps to the reader.
+13. CRITICAL — FALSE NEGATIVE CLAIMS: The scraper may only capture SOME pages of the website. NEVER claim that credentials, team bios, about pages, or specific content is "missing", "not visible", or "not displayed" unless you are 100% CERTAIN based on a thorough review of ALL scraped pages. If the scraped content doesn't mention provider credentials, use neutral improvement language like "Provider credentials could be featured more prominently" or "Consider highlighting clinical qualifications on the homepage" — NEVER say "No provider credentials are visible" because they might exist on an uncrawled page. This is critical — making a false claim about missing content destroys our credibility with the clinic owner.
+11. ABSOLUTE REVENUE GUARDRAIL — THIS IS NON-NEGOTIABLE:
+    - ExoMind protocol value = $4,500 FIXED. Do not use any other number.
+    - NEVER write any dollar amount above $6,000 for a single ExoMind patient.
+    - Maximum monthly revenue projection = 15 patients × $4,500 = $67,500.
+    - NEVER write "$8,000", "$10,000", "$12,000", "$12,500", "$15,000", "$20,000", "$50,000-$200,000", "$100,000", "$120,000", "$150,000", or ANY inflated figure.
+    - If your output contains any per-patient value above $6,000, the ENTIRE REPORT IS INVALID.
+    - Revenue math check: always show (number of patients) × $4,500 = (total).
 
 Apply the copywriting principles of Eugene Schwartz (market sophistication), Gary Halbert (emotional triggers), and Gary Bencivenga (proof-driven persuasion). Every section must:
 - Reference SPECIFIC data from the website scrape or competitor research
@@ -549,7 +684,7 @@ CLINIC OWNER DATA:
 Name: ${firstName} ${lastName}
 Email: ${email}
 Website: ${website}
-Services Offered: ${services.join(", ")}
+Services INTERESTED IN Adding (NOT currently on website): ${services.join(", ")}
 Clinic Status: ${clinicOperational}
 Monthly Marketing Budget: ${monthlyBudget}
 Team Structure: ${teamStructure}
@@ -586,12 +721,13 @@ FORMATTING RULES:
 
 ## 1. 🔍 Executive Summary & Market Opportunity
 
-Write 3-4 punchy paragraphs covering:
-- The total addressable market for brain optimization in their city — focus on the executive/professional demographic, NOT the general mental health population
-- The revenue opportunity: each ExoMind patient is worth $3,000–$6,000 per protocol. Calculate potential monthly revenue from 10-15 new patients using $4,500 as the average. Never project above $67,500/month.
-- The competitive landscape gap — most neurofeedback/brain optimization clinics in their market are poorly marketed and easily outpositioned
+Write 3-4 punchy paragraphs. FIRST, identify what this clinic currently does (from the scraped website data) and acknowledge it. Then explain how ExoMind creates a NEW revenue layer on top of their existing services. Cover:
+- The clinic's current positioning and how ExoMind complements it (use the CLINIC-TYPE DIFFERENTIATION guidance above)
+- The specific patient populations in their area who need ExoMind — based on REAL demographics, not hypothetical Silicon Valley CEOs
+- Revenue opportunity: each ExoMind patient = $4,500 per protocol. Calculate: 5-8 new patients/month × $4,500 = $22,500-$36,000 in NEW monthly revenue on TOP of existing services. Start conservative — these are realistic Month 3+ numbers after the pipeline matures.
+- Why their current patient base is already a warm audience for ExoMind referrals
 
-Use a blockquote to highlight the single biggest number.
+Use a blockquote to highlight the single biggest number (never exceeding $36,000/month).
 
 ---
 
@@ -600,41 +736,40 @@ Use a blockquote to highlight the single biggest number.
 Grade the website on 4 dimensions. For EACH grade, use this EXACT format:
 
 ### Trust & Authority: [A-F grade]
-Does this website look like a premium brain optimization center that a CEO would trust with their cognition? Or does it look like a generic mental health clinic? Reference SPECIFIC elements from the website.
-- **What's Working:** bullet points of strengths (if any)
+Does this website establish credibility for a premium cash-pay neurostimulation service? Reference SPECIFIC elements from the scraped website data — provider credentials, testimonials, professional photography, clinical affiliations, insurance messaging (which repels cash-pay patients), etc.
+- **What's Working:** bullet points of strengths (if any exist in the scraped data)
 - **What's Broken:** bullet points of weaknesses
 - **Fix It Now:** The single most impactful action
 
 ### Speed: [A-F grade]
-Use the REAL data from the TECHNICAL AUDIT section above. Report the exact Mobile Load Time, Performance Score, FCP, and LCP — do NOT guess these numbers.
+Use the REAL data from the TECHNICAL AUDIT section above. Report the exact Mobile Load Time, Performance Score, FCP, and LCP — do NOT guess these numbers. If no speed data is available, grade based on the website platform (e.g., Wix/Squarespace sites typically score 40-60/100).
 - **Mobile Load Time:** [exact Speed Index value from data]
 - **Performance Score:** [exact score from data]/100
 - **First Contentful Paint:** [exact FCP from data]
-If the Speed Index is above 2.5 seconds, this is a "Bleeding Neck" — explain that executives will not wait for slow websites.
+If the Speed Index is above 2.5 seconds, this is a "Bleeding Neck" — every paid click on a slow page bleeds money.
 - **What's Working:** any speed strengths
 - **What's Broken:** specific speed issues with exact numbers
 - **Fix It Now:** The single most impactful speed optimization
 
 ### SEO & Discoverability: [A-F grade]
-(same structure — focus on whether they rank for "neurofeedback", "brain optimization", "ExoMind" + their city)
+Are they ranking for ExoMind-related searches? Check for: "neurofeedback [city]", "brain optimization [city]", "TMS alternative [city]", "non-medication treatment [condition] [city]". Reference what content IS present on the site.
+- Same bullet structure as above
 
-### Executive-Ready Positioning: [A-F grade]
-Does the website speak to busy professionals and high-achievers, or does it read like a generic health clinic? Is the language aspirational (performance, edge, optimization) or clinical (treatment, disorder, symptoms)?
-- Grade based on whether an executive would see this and think "this is for me"
+### ExoMind-Ready Positioning: [A-F grade]
+Does the website have ANY dedicated ExoMind content? If not, does the current positioning (pain clinic, psychiatry, spa, etc.) naturally bridge to ExoMind or repel the ExoMind patient? Grade based on how easily a potential ExoMind patient would understand that THIS clinic offers ExoMind.
+- Same bullet structure as above
 
 After all 4 grades, add:
 ### 🚨 The #1 Critical Fix for Today
-One paragraph describing the single most impactful change.
+One paragraph describing the single most impactful change. This should be specific to THEIR situation — not a generic "create an ExoMind landing page" for every clinic.
 
 ---
 
 ## 3. 🏆 Competitive Landscape & Ad Intelligence
 
-Analyze the local neurofeedback/brain optimization market using the competitor data provided.
-
 ### Their Current Ad Strategy
-- **Active Ad Count:** Report the exact number of active ads found. If ZERO_ADS, explain the opportunity: "You have ZERO paid ad presence. In a market where your competitors are [describe competitor ad activity], you are invisible to the highest-value patients searching for brain optimization."
-- **Creative Analysis:** If ads ARE running, analyze the messaging. Are they positioning as premium/executive or generic/clinical?
+- **Active Ad Count:** Report the exact number of active ads found. If ZERO_ADS, this means organic and referral strategies become even more important — explain why.
+- **Creative Analysis:** If ads ARE running, analyze the messaging. Are they targeting the right patients? Is the creative speaking to MINDSET (the M in A.I.M.)?
 
 ### Local Competitive Landscape
 Show a table with ONLY competitors from the SAME STATE/REGION:
@@ -643,44 +778,99 @@ Show a table with ONLY competitors from the SAME STATE/REGION:
 |---|---|---|---|---|---|
 
 After the table, write 2-3 blockquote callouts highlighting opportunities:
-> **Market Gap:** [Describe specific positioning gaps no competitor is filling — e.g., none of them target executives specifically, none have premium branding, etc.]
+> **Market Gap:** [Describe specific positioning gaps no competitor is filling]
+
+> **A.I.M. Advantage:** [Explain which AUDIENCE segment is being ignored by competitors, what high-INTENT searches have no ads, and what MINDSET messaging is completely absent from competitor marketing]
 
 ---
 
-## 4. 🗺️ The ExoMind Patient Acquisition Blueprint (60-Day Plan)
+## 4. 🗺️ The ExoMind Patient Acquisition Blueprint (60-Day A.I.M. Plan)
 
-### Week 1-2: Premium Positioning & Quick Wins (Zero Ad Spend)
-Bullet list of 5-7 actions specific to ExoMind: Google Business Profile optimization for brain optimization keywords, executive-focused website copy updates, LinkedIn authority content, case study development, partnership outreach to executive coaches / corporate wellness programs.
+Structure EVERY recommendation around which A.I.M. pillar it serves. Label each action with [A], [I], or [M].
 
-### Week 3-4: Paid Traffic Launch
+### Week 1-2: Foundation & Quick Wins (Zero Ad Spend)
+5-7 actions tailored to THIS clinic's situation. Every bullet must be labeled with [A], [I], or [M]. These must be things they can do TODAY with zero budget. Examples to customize based on their clinic type:
+- [A] Identify the top 3 patient segments from their EXISTING patient base who are most likely ExoMind candidates — be SPECIFIC about which conditions or demographics
+- [I] Create a dedicated ExoMind page (or subdomain) that intercepts patients searching for non-medication brain health solutions — specify what the page should contain
+- [M] Develop 3 patient transformation stories that address the specific fears and hopes of THEIR patient demographic — name the fears explicitly
+- [A] Partnership outreach to referral sources specific to THEIR market (pain specialists, addiction counselors, executive coaches — match to their clinic type)
+- [I] Google Business Profile optimization with ExoMind-relevant keywords for their specific city
+- [M] Create a "Is ExoMind Right For You?" self-assessment that pre-qualifies patients by addressing the #1 objection for THEIR patient demographic
 
-#### Native Advertising (Taboola/Outbrain)
-ExoMind's ideal patients read Forbes, Bloomberg, WSJ, and Entrepreneur. Native ads that look like editorial content in these reading environments outperform social ads for this demographic. Include a table:
+### Week 3-6: Paid Traffic Launch
 
-| Target Persona | Ad Angle | Sample Headline | Landing Page |
-|---|---|---|---|
-| CEO with brain fog | Performance gap | "The protocol Silicon Valley execs use to stay sharp after 50" | VSL training page |
-| Founder burning out | Recovery without weakness | "Burnout is a brain problem, not a willpower problem" | Educational content |
-| Executive post-concussion | Transformation | "From forgetting meetings to running a $50M company" | Case study page |
-| Biohacker/optimizer | Science-first | "Why 6 ExoMind sessions outperform 40 neurofeedback sessions" | Comparison page |
+#### Recommended Monthly Ad Budget
 
-#### Meta Ads — Advantage+ Strategy
-Use Advantage+ campaigns. Focus on transformation stories from high-performers, NOT clinical depression narratives.
+Present TWO budget tiers — a starter budget and a scale budget. Do NOT lead with a $6K+ number. Many clinic owners are just exploring ExoMind and a huge budget scares them off.
 
-#### Google Ads — High-Intent Search
-Target "ExoMind near me", "neurofeedback for executives", "brain optimization [city]", "cognitive performance clinic". These are premium-intent searches with high conversion potential.
+**🟢 Starter Budget (Month 1-2): $2,000–$3,500/month**
+Pick ONE primary channel based on the clinic's strengths:
+- If they have strong content/storytelling → Native Advertising at $1,500–$2,500/month
+- If they have visual assets or video → Meta Ads at $2,000–$3,000/month (minimum $65/day for optimization)
+- If they're in a high-intent market → Google Ads at $1,000–$2,000/month
+Add $500/month for retargeting across all channels.
 
-### Week 5-8: Executive Referral Network & Nurture
-LinkedIn outreach to executive coaches, corporate wellness departments. Email sequence focused on performance and ROI (not treatment/healing language). Retargeting ads for website visitors.
+**🔵 Scale Budget (Month 3+, once ROI is proven): $5,000–$8,000/month**
+Expand to multiple channels:
+- Native Advertising: $1,500–$2,500/month
+- Meta Ads: $2,000–$3,500/month
+- Google Ads: $1,000–$2,000/month
+
+The goal is to START lean, prove the model works, THEN scale. Do NOT present the scale budget as the "recommended starting budget."
+
+#### Native Advertising (Taboola/Outbrain) — [I] Intent Capture
+Native advertising is NOT display ads. Native ads look like editorial content placed INSIDE news and content sites (Forbes, Business Insider, health publications). The key is the ADVERTORIAL — the article a patient lands on after clicking.
+
+**Advertorial Strategy:** For each ad angle below, describe the ADVERTORIAL the click leads to — NOT just a headline. Each advertorial should follow this structure:
+1. **Hook:** An editorial-style opening that matches the tone of the publication (e.g., health journalism, personal essay, science reporting)
+2. **Story:** A patient narrative or clinical discovery that builds credibility and emotional connection
+3. **Bridge:** The moment where the reader realizes ExoMind is the solution being discussed
+4. **Offer:** A soft CTA — free assessment, educational video, or consultation — NOT a hard sell
+
+Create a table with 4 ad angles. Each must be based on THIS clinic's actual patient demographics. DO NOT use generic "Silicon Valley CEO" personas. Base every persona on the conditions and patients THIS clinic already treats.
+
+| Target Persona | A.I.M. Pillar | Native Ad Headline | Advertorial Angle | CTA |
+|---|---|---|---|---|
+| [Persona from THIS clinic's patients] | [A/I/M] | [Headline] | [Describe the advertorial: editorial style, patient story type, and how it bridges to ExoMind] | [Specific CTA] |
+| [Different persona] | [A/I/M] | [Headline] | [Different advertorial angle] | [Specific CTA] |
+| [Different persona] | [A/I/M] | [Headline] | [Different advertorial angle] | [Specific CTA] |
+| [Different persona] | [A/I/M] | [Headline] | [Different advertorial angle] | [Specific CTA] |
+
+#### Meta Ads — Advantage+ Strategy [A] + [M]
+Use Advantage+ campaigns with Andromeda AI targeting. Describe 3-4 creative concepts that are specific to THIS clinic's patient demographics. For each creative, specify:
+- **Format:** Video (15s/30s/60s), carousel, single image, or UGC-style
+- **Hook:** The first 3 seconds that stop the scroll — what does the viewer see/hear?
+- **Audience segment:** Which A.I.M. AUDIENCE this targets
+- **Mindset trigger:** What internal fear/hope/identity this speaks to
+Do NOT use generic "transformation story" advice. Describe the SPECIFIC creative.
+
+#### Google Ads — High-Intent Search [I]
+List 5-7 SPECIFIC search terms relevant to THIS clinic's location and services. For EACH keyword, include:
+- The keyword itself
+- Estimated monthly search volume category (low/medium/high for their market size)
+- Expected cost-per-click range
+Include both branded terms ("ExoMind [city]") and condition-based terms tailored to their patient population.
+
+### Week 5-8: Nurture & Referral Network [M] + [A]
+Recommendations for email sequences, retargeting, and referral partnerships — all tailored to THIS clinic's existing services and patient base. Every recommendation labeled with [A], [I], or [M]. Be specific about:
+- Email sequence length and cadence (e.g., "7 emails over 21 days")
+- What each email addresses (specific objection or fear)
+- Retargeting budget ($500-$1,000/month) and audience windows (7-day, 14-day, 30-day visitors)
+- Referral partner types specific to THEIR market and clinic type
 
 ### KPIs & Success Metrics
-Show targets at Week 2, Week 4, and Week 8.
+Show CONSERVATIVE, CREDIBLE targets. ExoMind is a premium $4,500 service — patients take weeks to move from awareness to booking. Do NOT oversell. These numbers should feel achievable, not aspirational. Use this timeline:
+- **Week 2:** Foundation metrics only — ExoMind page live, GBP optimized, first content published. Zero patients expected. Zero revenue.
+- **Week 4:** First qualified leads trickling in — 5-10 consultation requests, 1-2 assessments booked. Revenue: $0-$4,500 (0-1 patient).
+- **Week 6-7:** Pipeline building — 2-4 patients enrolled in protocol. Revenue: $9,000-$18,000.
+- **Week 8:** Pipeline maturing — 5-8 total patients, referral network developing. Revenue: $22,500-$36,000.
+NEVER project more than 8 patients in any single month during the first 60 days. NEVER project revenue above $36,000/month in the report. These are Month 1-2 numbers — scale comes later.
 
 ---
 
 ## 5. 🚀 The Cost of Waiting
-- Calculate the specific daily revenue they are losing. At $4,500 average patient value, every missed patient = $4,500 gone. Use conservative math.
-- Reference one competitor vulnerability that may close soon.
+- Calculate the specific monthly revenue they are leaving on the table. At $4,500 per ExoMind patient, even 1-2 missed patients per month adds up. Show math: e.g., "Even 2 missed patients per month = $9,000/month = $108,000/year in revenue your clinic never captures." Keep this grounded — do NOT project inflated numbers.
+- Reference how their EXISTING patient base is already being underserved — patients who could benefit from ExoMind are walking out the door every week without knowing this option exists.
 - Then end the ENTIRE report with EXACTLY this text and ABSOLUTELY NOTHING after it:
 
 "Every day you wait is another day your competitors capture the patients who should be yours. For more in-depth strategies, breakdowns, and patient acquisition playbooks, watch our training videos on YouTube: https://www.youtube.com/@orielmor-livformormedia"
